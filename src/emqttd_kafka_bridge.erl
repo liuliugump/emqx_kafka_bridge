@@ -86,9 +86,6 @@ on_session_terminated(ClientId, Username, Reason, _Env) ->
 on_message_publish(Message = #mqtt_message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     {ok, Message};
 
-on_message_publish(Message = #mqtt_message{topic = <<"$UP/", Rewrite/binary>>}, _Env) ->
-    {ok,  Message#mqtt_message{topic = <<Rewrite/binary>>}};
-
 on_message_publish(Message = #mqtt_message{pktid   = PkgId,
                         qos     = Qos,
                         retain  = Retain,
@@ -97,14 +94,19 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
                         payload = Payload
 						}, _Env) ->
     io:format("publish ~s~n", [emqttd_message:format(Message)]),
-    Str1 = <<"{\"topic\":\"">>,
-    Str2 = <<"\", \"message\":\"">>,
-    Str3 = <<"\"}">>,
-    Str4 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary>>,
-	{ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
-    ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
-    ekaf:produce_async(ProduceTopic, Str4),	
-    {ok, Message}.
+    Regex = "products/(\\S+)/devices/(\\S+)/(command|init|ping)(/\\S+)*$",
+    case re:run(Topic, Regex, [{capture, all_but_first,list}]) of
+       nomatch -> {ok, Message};
+       {match, Captured} -> [Key1, Key2|Fix] = Captured,
+       Str1 = <<"{\"topic\":\"">>,
+       Str2 = <<"\", \"message\":\"">>,
+       Str3 = <<"\"}">>,
+       Str4 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary>>,
+	   {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
+       ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
+       ekaf:produce_async(ProduceTopic,[iolist_to_binary([Key1,"_",Key2]),str4]),	
+       {ok, Message}
+    end.
 
 
 on_message_delivered(ClientId, Username, Message, _Env) ->
