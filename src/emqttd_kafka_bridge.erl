@@ -104,7 +104,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
        Str4 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary>>,
 	   {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
        ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
-       ekaf:produce_async(ProduceTopic,{iolist_to_binary([Key1,"_",Key2]),str4}),	
+       ekaf:produce_async(ProduceTopic,{iolist_to_binary([Key1,"_",Key2]),Str4}),	
        {ok, Message}
     end.
 
