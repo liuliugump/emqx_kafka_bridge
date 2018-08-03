@@ -102,9 +102,13 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
        Str2 = <<"\", \"message\":\"">>,
        Str3 = <<"\"}">>,
        Str4 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary>>,
-	   {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
+	   
+       {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
        ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
-       ok = brod:produce_sync(brod_client_1, ProduceTopic, 0, iolist_to_binary([Key1,"_",Key2]), Str4),	
+       Partitions = proplists:get_value(kafka_producer_partitions, KafkaTopic),
+       Key = iolist_to_binary([Key1,"_",Key2]),
+       
+       ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Str4),	
        {ok, Message}
     end.
 
@@ -129,6 +133,10 @@ brod_init(_Env) ->
     ok = brod:start_producer(brod_client_1, Topic, _ProducerConfig = []),
 
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
+
+getPartiton(Key, Partitions) ->
+     <<Fix:120, Match:8>> = crypto:hash(md5, iolist_to_binary([Key1,"_",Key2])),
+     abs(Match) rem Partitions
 
 %% Called when the plugin application stop
 unload() ->
