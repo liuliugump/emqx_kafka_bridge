@@ -104,7 +104,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
        Str4 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary>>,
 	   {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
        ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
-       ok = brod:produce_sync(brod_client_1, ?ProduceTopic, 0, iolist_to_binary([Key1,"_",Key2]), Str4)	
+       ok = brod:produce_sync(brod_client_1, ProduceTopic, 0, iolist_to_binary([Key1,"_",Key2]), Str4)	
        {ok, Message}
     end.
 
@@ -121,7 +121,7 @@ brod_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod),
     {ok, Values} = application:get_env(emqttd_kafka_bridge, values),
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
-    Topic =  proplists:get_value({kafka_producer_topic, Values),
+    Topic =  proplists:get_value(kafka_producer_topic, Values),
     Partition = 0,
     ClientConfig = [],
 
