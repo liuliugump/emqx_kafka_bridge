@@ -135,7 +135,7 @@ brod_init(_Env) ->
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
 
 getPartiton(Key, Partitions) ->
-     <<Fix:120, Match:8>> = crypto:hash(md5, iolist_to_binary([Key1,"_",Key2])),
+     <<Fix:120, Match:8>> = crypto:hash(md5, Key),
      abs(Match) rem Partitions.
 
 %% Called when the plugin application stop
