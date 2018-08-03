@@ -136,7 +136,7 @@ brod_init(_Env) ->
 
 getPartiton(Key, Partitions) ->
      <<Fix:120, Match:8>> = crypto:hash(md5, iolist_to_binary([Key1,"_",Key2])),
-     abs(Match) rem Partitions
+     abs(Match) rem Partitions.
 
 %% Called when the plugin application stop
 unload() ->
