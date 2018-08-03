@@ -9,8 +9,8 @@ dep_brod = git https://github.com/klarna/brod.git master
 BUILD_DEPS = emqttd cuttlefish supervisor3 kafka_protocol
 dep_emqttd = git https://github.com/emqtt/emqttd master
 dep_cuttlefish = git https://github.com/emqtt/cuttlefish
-dep_supervisor3 = git https://github.com/klarna/supervisor3.git 1.1.5
-dep_kafka_protocol = git https://github.com/klarna/kafka_protocol.git 1.1.2
+dep_supervisor3 = git https://github.com/klarna/supervisor3.git
+dep_kafka_protocol = git https://github.com/klarna/kafka_protocol.git
 
 COVER = true
 
