@@ -2,8 +2,8 @@ PROJECT = emqttd_kafka_bridge
 PROJECT_DESCRIPTION = EMQTTD Kafka Bridge
 PROJECT_VERSION = 2.0.7
 
-DEPS = ekaf
-dep_ekaf = git https://github.com/helpshift/ekaf master
+DEPS = brod
+dep_brod = git https://github.com/klarna/brod.git master
 
 
 BUILD_DEPS = emqttd cuttlefish

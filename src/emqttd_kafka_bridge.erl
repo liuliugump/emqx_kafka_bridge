@@ -39,7 +39,7 @@
 
 %% Called when the plugin application start
 load(Env) ->
-	ekaf_init([Env]),
+	brod_init([Env]),
     emqttd:hook('client.connected', fun ?MODULE:on_client_connected/3, [Env]),
     emqttd:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
     emqttd:hook('client.subscribe', fun ?MODULE:on_client_subscribe/4, [Env]),
@@ -104,7 +104,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
        Str4 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary>>,
 	   {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
        ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
-       ekaf:produce_async(ProduceTopic,{iolist_to_binary([Key1,"_",Key2]),Str4}),	
+       ok = brod:produce_sync(brod_client_1, ?ProduceTopic, 0, iolist_to_binary([Key1,"_",Key2]), Str4)	
        {ok, Message}
     end.
 
@@ -117,14 +117,18 @@ on_message_acked(ClientId, Username, Message, _Env) ->
     io:format("client(~s/~s) acked: ~s~n", [Username, ClientId, emqttd_message:format(Message)]),
     {ok, Message}.
 
-ekaf_init(_Env) ->
+brod_init(_Env) ->
+    {ok, _} = application:ensure_all_started(brod),
     {ok, Values} = application:get_env(emqttd_kafka_bridge, values),
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
-    PartitionStrategy= proplists:get_value(partition_strategy, Values),
-    application:set_env(ekaf, ekaf_partition_strategy, PartitionStrategy),
-    application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
-    {ok, _} = application:ensure_all_started(ekaf),
-    io:format("Initialized ekaf with ~p~n", [{"localhost", 9092}]).
+    Topic =  proplists:get_value({kafka_producer_topic, Values),
+    Partition = 0,
+    ClientConfig = [],
+
+    ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
+    ok = brod:start_producer(brod_client_1, Topic, _ProducerConfig = []),
+
+    io:format("Init ekaf with ~p~n", [BootstrapBroker]).
 
 %% Called when the plugin application stop
 unload() ->
