@@ -97,7 +97,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
     Regex = "^(client|device)/products/(\\S+)/devices/(\\S+)/(command|init|ping)(/\\S+)*$",
     case re:run(Topic, Regex, [{capture, all_but_first,list}]) of
        nomatch -> {ok, Message};
-       {match, Captured} -> [Key1, Key2, key3,|Fix] = Captured,
+       {match, Captured} -> [Key1, Key2, Key3,|Fix] = Captured,
        if Key1 == "device" -> Type= "BUFFER"; 
            true -> Type = "JSON"
 	   end,		   
