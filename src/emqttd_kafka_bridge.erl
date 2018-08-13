@@ -98,8 +98,8 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
     case re:run(Topic, Regex, [{capture, all_but_first,list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Key1, Key2, key3,|Fix] = Captured,
-       if Key1 == "device" -> Type= "JSON"; 
-           true -> Type = "BUFFER"
+       if Key1 == "device" -> Type= "BUFFER"; 
+           true -> Type = "JSON"
 	   end,		   
        Str1 = <<"{\"topic\":\"">>,
        Str2 = <<"\", \"message\":\"">>,
