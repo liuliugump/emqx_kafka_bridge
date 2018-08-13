@@ -98,14 +98,14 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
     case re:run(Topic, Regex, [{capture, all_but_first,list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Key1, Key2, Key3|Fix] = Captured,
-       if Key1 == "device" -> Type= "BUFFER"; 
-           true -> Type = "JSON"
+       if Key1 == "device" -> Type= <<"BUFFER">>; 
+           true -> Type = <<"JSON">>
 	   end,		   
        Str1 = <<"{\"topic\":\"">>,
        Str2 = <<"\", \"message\":\"">>,
        Str3 = <<"\", \"type\":\"">>,
 	   Str4 = <<"\"}">>,
-       Str5 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary, Type/binary,Str4/binary>>,
+       Str5 = <<Str1/binary, Topic/binary, Str2/binary, Payload/binary, Str3/binary, Type/binary, Str4/binary>>,
 	   
        {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
        ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
