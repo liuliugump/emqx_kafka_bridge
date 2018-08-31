@@ -1,12 +1,3 @@
-
-emqttd_kafka_plugin
-===================
-
-This is a plugin for the EMQ broker that sends all messages received by the broker to kafka.
-
-**This project is a sub-module of ConnectX IoT platform.**
-**Refer https://github.com/SkylineLabs/ConnectX-IoT-platform for more details**
-
 Build the EMQ broker
 -------------
 
@@ -17,7 +8,7 @@ git clone https://github.com/emqtt/emq-relx.git
 2. Add DEPS of the plugin in the Makefile
 ```
 DEPS += emqttd_kafka_bridge
-dep_emqttd_kafka_bridge = git https://github.com/SkylineLabs/emqttd_kafka_bridge.git master
+dep_emqttd_kafka_bridge = git https://xxxxxxxxxxx.git master
 ```
 3. Add load plugin in relx.config
 ```
