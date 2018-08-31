@@ -127,8 +127,8 @@ brod_init(_Env) ->
     ClientConfig = [],
 
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
-    ok = brod:start_producer(brod_client_1, Topic, _ProducerConfig = []),
-
+    ok = brod:start_producer(brod_client_1, "saas_device_downstream", _ProducerConfig = []),
+    ok = brod:start_producer(brod_client_1, "saas_client_downstream", _ProducerConfig = []),
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
 
 getPartiton(Key, Partitions) ->
