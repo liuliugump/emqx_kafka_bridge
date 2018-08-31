@@ -105,7 +105,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
        Partitions = proplists:get_value(kafka_producer_partitions, KafkaTopic),
        Key = iolist_to_binary([Key2,"_",Key3]),
        
-       ok = brod:produce_sync(brod_client_1, <<ProduceTopic>>, getPartiton(Key,Partitions), Key, Payload),	
+       ok = brod:produce_sync(brod_client_1, <<"saas_device_downstream">>, getPartiton(Key,Partitions), Key, Payload),	
        {ok, Message}
     end.
 
@@ -130,7 +130,6 @@ brod_init(_Env) ->
 
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     ok = brod:start_producer(brod_client_1, <<"saas_device_downstream">>, _ProducerConfig = []),
-    ok = brod:start_producer(brod_client_1, <<"saas_client_downstream">>, _ProducerConfig = []),
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
 
 getPartiton(Key, Partitions) ->
