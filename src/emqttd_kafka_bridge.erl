@@ -98,14 +98,14 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
     case re:run(Topic, Regex, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Key1, Key2, Key3|Fix] = Captured,
-       if Key1 == "device" -> ProduceTopic = "saas_device_downstream"; 
-           true -> ProduceTopic = "saas_client_downstream"
+       if Key1 == "device" -> ProduceTopic = <<"saas_device_downstream">>; 
+           true -> ProduceTopic = <<"saas_client_downstream">>
 	   end,		   
        {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
        Partitions = proplists:get_value(kafka_producer_partitions, KafkaTopic),
        Key = iolist_to_binary([Key2,"_",Key3]),
        
-       ok = brod:produce_sync(brod_client_1, <<ProduceTopic>>, getPartiton(Key,Partitions), Key, Payload),	
+       ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Payload),	
        {ok, Message}
     end.
 
