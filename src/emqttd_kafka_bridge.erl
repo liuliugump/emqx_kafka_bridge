@@ -124,7 +124,9 @@ brod_init(_Env) ->
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
     Topic =  proplists:get_value(kafka_producer_topic, Values),
     Partition = 0,
-    ClientConfig = [],
+    ClientConfig = [
+        {allow_topic_auto_creation, true}
+    ],
 
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     ok = brod:start_producer(brod_client_1, "saas_device_downstream", _ProducerConfig = []),
