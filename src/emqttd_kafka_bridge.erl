@@ -97,18 +97,18 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
     Regex = "^(client|device)/products/(\\S+)/devices/(\\S+)/(command)(/\\S+)*$",
     case re:run(Topic, Regex, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
-       {match, Captured} -> [Key1, Key2, Key3|Fix] = Captured,
-       if Key1 == "device" -> ProduceTopic = <<"saas_device_downstream">>; 
-           true -> ProduceTopic = <<"saas_client_downstream">>
-	   end,		   
-       {ok, KafkaTopic} = application:get_env(emqttd_kafka_bridge, values),
-       Partitions = proplists:get_value(kafka_producer_partitions, KafkaTopic),
-       Key = iolist_to_binary([Key2,"_",Key3]),
-       
-       ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Payload),	
+       {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,	
+         {ok, Options} = application:get_env(emqttd_kafka_bridge, values),
+         Topics = proplists:get_value(kafka_producer_topic, Options),
+         case proplists:get_value(Type, Topics) of
+             undefined -> io:format("publish no match topic ~s", [Type]);
+             _ -> ProduceTopic = _,
+                  Partitions = proplists:get_value(kafka_producer_partitions, Options),
+                  Key = iolist_to_binary([ProductId,"_",DevKey]),   
+                  ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Payload),	
+        end,
        {ok, Message}
     end.
-
 
 on_message_delivered(ClientId, Username, Message, _Env) ->
     io:format("delivered to client(~s/~s): ~s~n", [Username, ClientId, emqttd_message:format(Message)]),
@@ -122,13 +122,10 @@ brod_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod),
     {ok, Values} = application:get_env(emqttd_kafka_bridge, values),
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
-    Topic =  proplists:get_value(kafka_producer_topic, Values),
-    Partition = 0,
     ClientConfig = [
         {auto_start_producers, true},
         {allow_topic_auto_creation, true}
     ],
-
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
 
