@@ -26,14 +26,12 @@ Edit the file emq-relx/deps/emqttd_kafka_bridge/etc/emqttd_kafka_bridge.config
 ```
 [
   {emqttd_kafka_bridge, [{values, [
-	  %%edit this to address and port on which kafka is running
-      {bootstrap_broker, {"172.31.29.115", 9092} },
-	  %% partition strategies can be strict_round_robin or random
-      {partition_strategy, strict_round_robin},
-      %% Change the topic to produce to kafka. Default topic is "Kafka". It is on this topic that the messages will be sent from the broker to a kafka consumer
-	  {kafka_producer_topic, <<"kafka">>}
+      {bootstrap_broker, [{"172.19.3.186", 9092}] },
+      {query_api_versions,false},
+      {reconnect_cool_down_seconds, 10},
+      {kafka_producer_partitions, 1}
     ]}]}
-].
+]
 ```
 
 Start the EMQ broker and load the plugin 
@@ -42,22 +40,6 @@ Start the EMQ broker and load the plugin
 2) ./bin/emqttd start
 3) ./bin/emqttd_ctl plugins load emqttd_kafka_bridge
 
-Test
------------------
-Send an MQTT message on a random topic from an MQTT client to you EMQ broker.
-
-The following should be received by your kafka consumer :
-
-  {"topic":"yourtopic", "message":[yourmessage]}
-This is the format in which kafka will receive the MQTT messages
-
-
-If Kafka consumer shows no messages even after publishing to EMQTT - ACL makes the plugin fail, so please remove all the ACL related code to ensure it runs properly. We will soon push the updated (Working) code to the repository. 
-  
-License
--------
-
-Apache License Version 2.0
 
 
 
