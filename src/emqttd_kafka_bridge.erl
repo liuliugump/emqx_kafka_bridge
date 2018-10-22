@@ -123,10 +123,8 @@ brod_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod),
     {ok, Values} = application:get_env(emqttd_kafka_bridge, values),
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
-    ClientConfig = [
-        {auto_start_producers, true},
-        {allow_topic_auto_creation, true}
-    ],
+    ClientConfig = proplists:get_value(client_config, Values),
+    
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
 
