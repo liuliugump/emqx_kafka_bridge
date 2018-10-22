@@ -106,7 +106,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
              _ -> ProduceTopic = _,
                   Partitions = proplists:get_value(kafka_producer_partitions, Options),
                   Key = iolist_to_binary([ProductId,"_",DevKey]),   
-                  ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Payload),	
+                  ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Payload)	
         end,
        {ok, Message}
     end.
