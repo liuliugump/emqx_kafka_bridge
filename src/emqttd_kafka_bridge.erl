@@ -93,6 +93,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
                         topic   = Topic,
                         payload = Payload
 						}, _Env) ->
+    
     io:format("publish ~s~n", [emqttd_message:format(Message)]),
     Regex = "^(client|device|paas)/products/(\\S+)/devices/(\\S+)/(command)(/\\S+)*$",
     case re:run(Topic, Regex, [{capture, all_but_first, list}]) of
