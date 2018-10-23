@@ -103,7 +103,7 @@ on_message_publish(Message = #mqtt_message{pktid   = PkgId,
          Topics = proplists:get_value(kafka_producer_topic, Options),
          case proplists:get_value(Type, Topics) of
              undefined -> io:format("publish no match topic ~s", [Type]);
-             _ -> ProduceTopic = _,
+             ProduceTopic -> 
                   Partitions = proplists:get_value(kafka_producer_partitions, Options),
                   Key = iolist_to_binary([ProductId,"_",DevKey]),   
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Payload)	
