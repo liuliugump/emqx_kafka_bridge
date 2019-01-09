@@ -79,7 +79,7 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 
 on_message_publish(Message = #message{id = MsgId,
                         qos = Qos,
-                        form = From,
+                        from = From,
                         flags = Flags,
                         topic  = Topic,
                         payload = Payload,
