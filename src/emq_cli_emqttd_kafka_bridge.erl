@@ -1,5 +1,4 @@
-%%--------------------------------------------------------------------
-%% Copyright (c) 2015-2017 Feng Lee <feng@emqtt.io>.
+%% Copyright (c) 2018 EMQ Technologies Co., Ltd. All Rights Reserved.
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -12,17 +11,13 @@
 %% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
-%%--------------------------------------------------------------------
 
 -module(emq_cli_emqttd_kafka_bridge).
-
--include_lib("emqttd/include/emqttd_cli.hrl").
 
 -export([cmd/1]).
 
 cmd(["arg1", "arg2"]) ->
-    ?PRINT_MSG("ok");
+    emqx_cli:print("ok");
 
 cmd(_) ->
-    ?USAGE([{"cmd arg1 arg2",  "cmd demo"}]).
-
+    emqx_cli:usage([{"cmd arg1 arg2", "cmd demo"}]).
