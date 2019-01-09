@@ -77,7 +77,7 @@ on_session_terminated(#{client_id := ClientId}, ReasonCode, _Env) ->
 on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     {ok, Message};
 
-on_message_publish(Message = #mqtt_message{pktid   = PkgId,
+on_message_publish(Message = #message{pktid   = PkgId,
                         qos     = Qos,
                         retain  = Retain,
                         dup     = Dup,
