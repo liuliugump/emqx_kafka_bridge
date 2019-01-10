@@ -91,14 +91,13 @@ on_message_publish(Message = #message{id = MsgId,
     case re:run(Topic, Regex, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,	
-         {ok, Options} = application:get_env(emqttd_kafka_bridge, values),
-         Topics = proplists:get_value(kafka_producer_topic, Options),
+         {ok, Topics} = application:get_env(emqttd_kafka_bridge, kafka_producer_topic),
+         {ok, Partition} = application:get_env(emqttd_kafka_bridge, kafka_producer_partition)
          case proplists:get_value(Type, Topics) of
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
-                  Partitions = proplists:get_value(kafka_producer_partitions, Options),
                   Key = iolist_to_binary([ProductId,"_",DevKey]),   
-                  ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partitions), Key, Payload)	
+                  ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, Payload)	
         end,
        {ok, Message}
     end.
@@ -120,9 +119,8 @@ on_message_dropped(#{client_id := ClientId}, Message, _Env) ->
 
 brod_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod),
-    {ok, Values} = application:get_env(emqttd_kafka_bridge, values),
-    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
-    ClientConfig = proplists:get_value(client_config, Values),
+    {ok, BootstrapBroker} = application:get_env(emqttd_kafka_bridge, bootstrap_broker),
+    {ok, ClientConfig} = application:get_env(emqttd_kafka_bridge, client_config),
     
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
