@@ -11,11 +11,7 @@ dep_cuttlefish = git-emqx https://github.com/emqx/cuttlefish v2.2.0
 dep_supervisor3 = git https://github.com/klarna/supervisor3.git
 dep_kafka_protocol = git https://github.com/klarna/kafka_protocol.git
 
-NO_AUTOPATCH = cuttlefish
-
 COVER = true
-
-$(shell [ -f erlang.mk ] || curl -s -o erlang.mk https://raw.githubusercontent.com/emqx/erlmk/master/erlang.mk)
 
 include erlang.mk
 
