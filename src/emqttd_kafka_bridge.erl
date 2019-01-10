@@ -92,7 +92,7 @@ on_message_publish(Message = #message{id = MsgId,
        nomatch -> {ok, Message};
        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,	
          {ok, Topics} = application:get_env(emqttd_kafka_bridge, kafka_producer_topic),
-         {ok, Partition} = application:get_env(emqttd_kafka_bridge, kafka_producer_partition)
+         {ok, Partition} = application:get_env(emqttd_kafka_bridge, kafka_producer_partition),
          case proplists:get_value(Type, Topics) of
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
