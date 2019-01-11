@@ -1,4 +1,4 @@
-%% emqttd_kafka_bride config mapping
+%% emqx_kafka_bride config mapping
 {mapping, "emqx.kafka.bridge.broker ", "emqx_kafka_bridge.bootstrap_broker", [
   {datatype, string},
   {default, "172.19.16.67:19092, 172.19.16.68:19092, 172.19.16.69:19092"}
