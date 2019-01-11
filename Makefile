@@ -5,11 +5,9 @@ PROJECT_VERSION = 3.0
 DEPS = brod
 dep_brod = git https://github.com/klarna/brod.git master
 
-BUILD_DEPS = emqx cuttlefish supervisor3 kafka_protocol
+BUILD_DEPS = emqx cuttlefish
 dep_emqx = git-emqx https://github.com/emqx/emqx master
 dep_cuttlefish = git-emqx https://github.com/emqx/cuttlefish v2.2.0
-dep_supervisor3 = git https://github.com/klarna/supervisor3.git
-dep_kafka_protocol = git https://github.com/klarna/kafka_protocol.git
 
 ERLC_OPTS += +debug_info
 
