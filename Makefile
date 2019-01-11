@@ -12,6 +12,7 @@ dep_supervisor3 = git-emqx https://github.com/klarna/supervisor3 1.1.8
 dep_kafka_protocol = git-emqx https://github.com/klarna/kafka_protocol 2.2.4
 
 ERLC_OPTS += +debug_info
+ERLC_OPTS += +warnings_as_errors +warn_export_all +warn_unused_import
 
 NO_AUTOPATCH = cuttlefish
 
