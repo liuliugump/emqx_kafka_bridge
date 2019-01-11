@@ -20,13 +20,13 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
-    {ok, Sup} = emqttd_kafka_bridge_sup:start_link(),
-    ok = emqttd_access_control:register_mod(auth, emq_auth_emqttd_kafka_bridge, []),
-    ok = emqttd_access_control:register_mod(acl, emq_acl_emqttd_kafka_bridge, []),
-    emqttd_kafka_bridge:load(application:get_all_env()),
+    {ok, Sup} = emqx_kafka_bridge_sup:start_link(),
+    ok = emqx_access_control:register_mod(auth, emqx_auth_kafka_bridge, []),
+    ok = emqx_access_control:register_mod(acl, emqx_acl_kafka_bridge, []),
+    emqx_kafka_bridge:load(application:get_all_env()),
     {ok, Sup}.
 
 stop(_State) ->
-    ok = emqttd_access_control:unregister_mod(auth, emq_auth_emqttd_kafka_bridge),
-    ok = emqttd_access_control:unregister_mod(acl, emq_acl_emqttd_kafka_bridge),
-    emqttd_kafka_bridge:unload().
+    ok = emqx_access_control:unregister_mod(auth, emqx_auth_kafka_bridge),
+    ok = emqx_access_control:unregister_mod(acl, emqx_acl_kafka_bridge),
+    emqx_kafka_bridge:unload().
