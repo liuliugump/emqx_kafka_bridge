@@ -1,4 +1,18 @@
+{mapping, "emqx.kafka.bridge.broker ", "emqx_kafka_bridge.bootstrap_broker", [
+  {datatype, string},
+  {default, "172.19.16.67:19092, 172.19.16.68:19092, 172.19.16.69:19092"}
+]}.
+
 {mapping, "emqx.kafka.bridge.partition", "emqx_kafka_bridge.kafka_producer_partition", [
   {datatype, integer},
   {default, 10}
 ]}.
+
+{translation, "emqx_kafka_bridge.bootstrap_broker", fun(Conf) ->
+  Broker = cuttlefish:conf_get("emqx.kafka.bridge.broker", Conf),
+  BrokerList = string:split(Broker, ",", all),
+	lists:map(fun(X)-> 
+	  [Host, Port] = string:tokens(X, ":"),
+	  {string:trim(Host), list_to_integer(string:trim(Port))}   
+	end, BrokerList).
+end}.
