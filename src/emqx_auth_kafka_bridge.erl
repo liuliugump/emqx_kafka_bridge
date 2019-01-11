@@ -12,7 +12,7 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(emqx_auth_emqttd_kafka_bridge).
+-module(emqx_auth_kafka_bridge).
 
 -behaviour(emqx_auth_mod).
 

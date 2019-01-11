@@ -12,19 +12,12 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(emqx_acl_emqttd_kafka_bridge).
+-module(emqx_cli_kafka_bridge).
 
-%% ACL callbacks
--export([init/1, check_acl/2, reload_acl/1, description/0]).
+-export([cmd/1]).
 
-init(Opts) ->
-    {ok, Opts}.
+cmd(["arg1", "arg2"]) ->
+    emqx_cli:print("ok");
 
-check_acl({Credentials, PubSub, Topic}, _Opts) ->
-    io:format("ACL Demo: ~p ~p ~p~n", [Credentials, PubSub, Topic]),
-    allow.
-
-reload_acl(_Opts) ->
-    ok.
-
-description() -> "ACL Demo Module".
+cmd(_) ->
+    emqx_cli:usage([{"cmd arg1 arg2", "cmd demo"}]).

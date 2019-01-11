@@ -12,7 +12,7 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(emqttd_kafka_bridge_sup).
+-module(emqx_kafka_bridge_sup).
 
 -behaviour(supervisor).
 

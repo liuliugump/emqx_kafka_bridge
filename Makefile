@@ -1,4 +1,4 @@
-PROJECT = emqttd_kafka_bridge
+PROJECT = emqx_kafka_bridge
 PROJECT_DESCRIPTION = MQTT-KAFKA
 PROJECT_VERSION = 3.0
 
@@ -22,4 +22,4 @@ $(shell [ -f erlang.mk ] || curl -s -o erlang.mk https://raw.githubusercontent.c
 app:: rebar.config
 
 app.config::
-	./deps/cuttlefish/cuttlefish -l info -e etc/ -c etc/emqttd_kafka_bridge.conf -i priv/emqttd_kafka_bridge.schema -d data
+	./deps/cuttlefish/cuttlefish -l info -e etc/ -c etc/emqx_kafka_bridge.conf -i priv/emqx_kafka_bridge.schema -d data
