@@ -13,6 +13,6 @@
   BrokerList = string:split(Broker, ",", all),
 	lists:map(fun(X)-> 
 	  [Host, Port] = string:tokens(X, ":"),
-	  {string:trim(Host), list_to_integer(string:trim(Port))}   
-	end, BrokerList).
+	  {Host, string:trim(Port)}   
+	end, BrokerList)
 end}.
