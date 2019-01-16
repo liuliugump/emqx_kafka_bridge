@@ -24,6 +24,10 @@
   {datatype, string}
 ]}.
 
+{mapping, "emqx.kafka.bridge.regex", "emqx_kafka_bridge.regex", [
+  {datatype, string}
+]}.
+
 {translation, "emqx_kafka_bridge.broker", fun(Conf) ->
   Broker = cuttlefish:conf_get("emqx.kafka.bridge.broker", Conf),
   BrokerList = string:split(Broker, ",", all),
@@ -57,6 +61,11 @@ end}.
   lists: append(ClientConfig)
 end}.
 
+{translation, "emqx_kafka_bridge.regex", fun(Conf) ->
+  Re = cuttlefish:conf_get("emqx.kafka.bridge.regex", Conf),
+  {ok, MP} = re:compile(string:trim(Re)), 
+  MP
+end}.
 
 {translation, "emqx_kafka_bridge.topic", fun(Conf) ->
   Config = cuttlefish:conf_get("emqx.kafka.bridge.topic", Conf),

@@ -20,6 +20,8 @@
 
 -export([load/1, unload/0]).
 
+-define(APP, emqx_kafka_bridge).
+
 %% Hooks functions
 -export([on_client_connected/4, on_client_disconnected/3]).
 -export([on_client_subscribe/3, on_client_unsubscribe/3]).
@@ -84,19 +86,18 @@ on_message_publish(Message = #message{id = MsgId,
                         topic  = Topic,
                         payload = Payload,
                         timestamp  = Time
-						}, _Env) ->
-    
+						}, _Env) -> 
     io:format("publish ~s~n", [emqx_message:format(Message)]),
-    Regex = "^(client|device|paas)/products/(\\S+)/devices/(\\S+)/(command)(/\\S+)*$",
-    case re:run(Topic, Regex, [{capture, all_but_first, list}]) of
+    MP =  proplists:get_value(regex, _Env),
+    case re:run(Topic, MP, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,	
-         {ok, Topics} = application:get_env(emqx_kafka_bridge, topic),
-         {ok, Partition} = application:get_env(emqx_kafka_bridge, partition),
+         Topics = proplists:get_value(topic, _Env),
          case proplists:get_value(Type, Topics) of
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
-                  Key = iolist_to_binary([ProductId,"_",DevKey]),   
+                  Key = iolist_to_binary([ProductId,"_",DevKey]),
+                  Partition = proplists:get_value(partiiton, _Env),   
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, Payload)	
         end,
        {ok, Message}
@@ -119,9 +120,8 @@ on_message_dropped(#{client_id := ClientId}, Message, _Env) ->
 
 brod_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod),
-    {ok, BootstrapBroker} = application:get_env(emqx_kafka_bridge, broker),
-    {ok, ClientConfig} = application:get_env(emqx_kafka_bridge, client),
-    
+    {ok, BootstrapBroker} = application:get_env(?APP, broker),
+    {ok, ClientConfig} = application:get_env(?APP, client),
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     io:format("Init ekaf with ~p~n", [BootstrapBroker]).
 
