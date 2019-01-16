@@ -20,6 +20,7 @@ dep_emqttd_kafka_bridge = git https://github.com/guide16/emqx_kafka_bridge.git m
 v3.0.0
 DEPS += emqx_kafka_bridge
 dep_emqttd_kafka_bridge = git https://github.com/guide16/emqx_kafka_bridge.git release
+```
 
 3. Add load plugin in relx.config
 
