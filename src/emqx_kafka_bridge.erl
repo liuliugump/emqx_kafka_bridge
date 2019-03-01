@@ -97,7 +97,7 @@ on_message_publish(Message = #message{id = MsgId,
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
                   Key = iolist_to_binary([ProductId,"_",DevKey]),
-                  Partition = proplists:get_value(partiiton, _Env),   
+                  Partition = proplists:get_value(partition, _Env),   
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, Payload)	
         end,
        {ok, Message}
