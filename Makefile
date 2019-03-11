@@ -6,7 +6,7 @@ DEPS = brod
 dep_brod = git-emqx https://github.com/klarna/brod master
 
 BUILD_DEPS = emqx cuttlefish supervisor3 kafka_protocol
-dep_emqx = git-emqx https://github.com/emqx/emqx master
+dep_emqx = git-emqx https://github.com/emqx/emqx emqx30
 dep_cuttlefish = git-emqx https://github.com/emqx/cuttlefish v2.2.0
 dep_supervisor3 = git-emqx https://github.com/klarna/supervisor3 1.1.8
 dep_kafka_protocol = git-emqx https://github.com/klarna/kafka_protocol 2.2.4
