@@ -111,8 +111,12 @@ on_message_publish(Message = #message{id = MsgId,
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
                   Key = iolist_to_binary([ProductId,"_",DevKey]),
-                  Partition = proplists:get_value(partition, _Env),   
-                  ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, Payload)	
+                  Partition = proplists:get_value(partition, _Env),
+                  Now = erlang:timestamp(),
+                  Msg = [{client_id, From}, {node, node()}, {qos, Qos}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
+                  {ok, MessageBody} = emqx_json:safe_encode(Msg),
+                  MsgPayload = iolist_to_binary(MessageBody),
+                  ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, MsgPayload)
         end,
        {ok, Message}
     end.
