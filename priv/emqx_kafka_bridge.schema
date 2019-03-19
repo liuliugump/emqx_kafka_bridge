@@ -78,9 +78,9 @@ end}.
 end}.
 
 {translation, "emqx_kafka_bridge.hook", fun(Conf) ->
-  connected = cuttlefish:conf_get("emqx.kafka.bridge.hook.client.connected.topic", Conf),
-  disconnected = cuttlefish:conf_get("emqx.kafka.bridge.hook.client.disconnected.topic", Conf),
-  [{connected, connected}, {disconnected, disconnected}]
+  Connected = cuttlefish:conf_get("emqx.kafka.bridge.hook.client.connected.topic", Conf),
+  Disconnected = cuttlefish:conf_get("emqx.kafka.bridge.hook.client.disconnected.topic", Conf),
+  [{connected, Connected}, {disconnected, Disconnected}]
 end}.
 
 {translation, "emqx_kafka_bridge.topic", fun(Conf) ->
