@@ -29,6 +29,8 @@
 -export([on_session_subscribed/4, on_session_unsubscribed/4]).
 -export([on_message_publish/2, on_message_delivered/3, on_message_acked/3, on_message_dropped/3]).
 
+-define(LOG(Level, Format, Args), emqx_logger:Level("KafkaBridge: " ++ Format, Args)).
+
 %% Called when the plugin application start
 load(Env) ->
     brod_init([Env]),
@@ -52,6 +54,7 @@ on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, Con
     Payload = [{client_id, ClientId}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
     Partition = proplists:get_value(partition, _Env),
+    ?LOG(error, "client-connected: client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n", [ClientId,Username,ConnAck,ConnAttrs]),
     brod:produce_sync(brod_client_1, Connected, getPartiton(ClientId,Partition), ClientId, Payload),
     ok.
 
@@ -61,6 +64,7 @@ on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCod
     Payload = [{client_id, ClientId}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
     Disconnected = proplists:get_value(disconnected, _Env),
     Partition = proplists:get_value(partition, _Env),
+    ?LOG(error, "client-disconnected: client_id:~s , username:~s, ReasonCode:~w", [ClientId,Username,ReasonCode]),
     brod:produce_sync(brod_client_1, Disconnected, getPartiton(ClientId,Partition), ClientId, Payload),
     ok.
 
