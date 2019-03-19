@@ -54,8 +54,9 @@ on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, Con
     Payload = [{client_id, ClientId}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
     Partition = proplists:get_value(partition, _Env),
-    ?LOG(error, "client-connected: topic:~s, _Env:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n", [Connected, _Env, ClientId,Username,ConnAck,ConnAttrs]),
-    brod:produce_sync(brod_client_1, Connected, getPartiton(ClientId,Partition), ClientId, Payload).
+    ok = brod:produce_sync(brod_client_1, Connected, getPartiton(ClientId,Partition), ClientId, Payload),
+    ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, ok:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, ok]),
+    {ok, Payload}.
 
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
     % io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
