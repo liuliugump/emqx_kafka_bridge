@@ -164,4 +164,4 @@ produce_kafka_payload(Topic, ClientId, Message, _Env) ->
     % MessageBody64 = base64:encode_to_string(MessageBody),
     Payload = iolist_to_binary(MessageBody),
     Partition = proplists:get_value(partition, _Env),
-    brod:produce_sync(brod_client_1, <<Topic>>, getPartiton(ClientId,Partition), ClientId, <<Payload>>).
+    brod:produce_sync(brod_client_1, <<Topic>>, getPartiton(ClientId,Partition), ClientId, <<"some-value">>).
