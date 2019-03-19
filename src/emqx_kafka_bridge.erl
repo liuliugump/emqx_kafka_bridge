@@ -53,20 +53,17 @@ on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, Con
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
-    Partition = proplists:get_value(partition, _Env),
     ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, Payload:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, Payload]),
-    ?LOG(error, "getPartiton-count: num:~s", [getPartiton(ClientId,Partition)]),
-    ok = brod:produce_sync(brod_client_1, <<Connected>>, getPartiton(ClientId,Partition), ClientId, Payload),
-    {ok, Payload}.
+    produce_kafka_payload(<<Connected>>, ClientId, Payload),
+    ok.
 
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
     % io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
     Disconnected = proplists:get_value(disconnected, _Env),
-    Partition = proplists:get_value(partition, _Env),
     ?LOG(error, "client-disconnected: client_id:~s , username:~s, ReasonCode:~w", [ClientId,Username,ReasonCode]),
-    brod:produce_sync(brod_client_1, Disconnected, getPartiton(ClientId,Partition), ClientId, Payload),
+    produce_kafka_payload(<<Disconnected>>, ClientId, Payload),
     ok.
 
 on_client_subscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
@@ -161,3 +158,10 @@ unload() ->
     emqx:unhook('message.delivered', fun ?MODULE:on_message_delivered/3),
     emqx:unhook('message.acked', fun ?MODULE:on_message_acked/3),
     emqx:unhook('message.dropped', fun ?MODULE:on_message_dropped/3).
+
+produce_kafka_payload(Topic, ClientId, Message) ->
+    {ok, MessageBody} = emqx_json:safe_encode(Message),
+    Partition = proplists:get_value(partition, _Env),
+    % MessageBody64 = base64:encode_to_string(MessageBody),
+    Payload = iolist_to_binary(MessageBody),
+    ok = brod:produce_sync(brod_client_1, Topic, getPartiton(ClientId,Partition), ClientId, Payload).
