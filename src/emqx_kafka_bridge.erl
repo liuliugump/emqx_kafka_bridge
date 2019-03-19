@@ -51,7 +51,7 @@ load(Env) ->
 on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, ConnAttrs, _Env) ->
     % io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
     Now = erlang:timestamp(),
-    Payload = [{client_id, ClientId}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
+    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
     % ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, Payload:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, Payload]),
     produce_kafka_payload(Connected, Username, Payload,_Env),
@@ -60,7 +60,7 @@ on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, Con
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
     % io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
     Now = erlang:timestamp(),
-    Payload = [{client_id, ClientId}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
     Disconnected = proplists:get_value(disconnected, _Env),
     % ?LOG(error, "client-disconnected: client_id:~s , username:~s, ReasonCode:~w", [ClientId,Username,ReasonCode]),
     produce_kafka_payload(Disconnected, Username, Payload, _Env),
@@ -137,7 +137,7 @@ brod_init(_Env) ->
     {ok, BootstrapBroker} = application:get_env(?APP, broker),
     {ok, ClientConfig} = application:get_env(?APP, client),
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
-    io:format("Init brod with ~p~n", [BootstrapBroker]).
+    io:format("Init EMQX-Kafka-Bridge with ~p~n", [BootstrapBroker]).
 
 getPartiton(Key, Partitions) ->
      <<Fix:120, Match:8>> = crypto:hash(md5, Key),
