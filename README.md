@@ -30,6 +30,8 @@ Edit the file emq-relx/deps/emqx_kafka_bridge/etc/emqx_kafka_bridge.config
  emqx.kafka.bridge.client.integer = reconnect_cool_down_seconds:10
  emqx.kafka.bridge.regex = ^(client|device|paas)/products/(\\S+)/devices/(\\S+)/(command)(/\\S+)*$
  emqx.kafka.bridge.topic = device:saas_device_downstream, client:saas_client_downstream, paas: paas_sqdata_upstream
+ emqx.kafka.bridge.hook.client.connected.topic     = mqtt_client_connected
+ emqx.kafka.bridge.hook.client.disconnected.topic  = mqtt_client_disconnected
 ```
 
 Start the EMQ broker and load the plugin 
