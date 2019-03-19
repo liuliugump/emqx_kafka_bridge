@@ -159,9 +159,10 @@ unload() ->
     emqx:unhook('message.acked', fun ?MODULE:on_message_acked/3),
     emqx:unhook('message.dropped', fun ?MODULE:on_message_dropped/3).
 
-produce_kafka_payload(Topic, ClientId, Message, _Env) ->
+produce_kafka_payload(Key, ClientId, Message, _Env) ->
     {ok, MessageBody} = emqx_json:safe_encode(Message),
     % MessageBody64 = base64:encode_to_string(MessageBody),
     Payload = iolist_to_binary(MessageBody),
     Partition = proplists:get_value(partition, _Env),
-    brod:produce_sync(brod_client_1, <<Topic>>, getPartiton(ClientId,Partition), ClientId, <<"some-value">>).
+    Topic = iolist_to_binary(Key),
+    brod:produce_sync(brod_client_1, Topic, getPartiton(Key,Partition), ClientId, Payload).
