@@ -28,12 +28,12 @@
   {datatype, string}
 ]}.
 
-{mapping, "emqx.kafka.bridge.hook.client.connected.topic", "emqx_kafka_bridge.hook", [
+{mapping, "emqx.kafka.bridge.hook.client.connected.topic", "emqx_kafka_bridge.connected", [
   {datatype, string},
   {default, "mqtt_client_connected"}
 ]}.
 
-{mapping, "emqx.kafka.bridge.hook.client.disconnected.topic", "emqx_kafka_bridge.hook", [
+{mapping, "emqx.kafka.bridge.hook.client.disconnected.topic", "emqx_kafka_bridge.disconnected", [
   {datatype, string},
   {default, "mqtt_client_disconnected"}
 ]}.
@@ -75,12 +75,6 @@ end}.
   Re = cuttlefish:conf_get("emqx.kafka.bridge.regex", Conf),
   {ok, MP} = re:compile(string:trim(Re)), 
   MP
-end}.
-
-{translation, "emqx_kafka_bridge.hook", fun(Conf) ->
-  Connected = cuttlefish:conf_get("emqx.kafka.bridge.hook.client.connected.topic", Conf),
-  Disconnected = cuttlefish:conf_get("emqx.kafka.bridge.hook.client.disconnected.topic", Conf),
-  [{connected, Connected}, {disconnected, Disconnected}]
 end}.
 
 {translation, "emqx_kafka_bridge.topic", fun(Conf) ->
