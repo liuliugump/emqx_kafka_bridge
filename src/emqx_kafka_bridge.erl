@@ -29,7 +29,7 @@
 -export([on_session_subscribed/4, on_session_unsubscribed/4]).
 -export([on_message_publish/2, on_message_delivered/3, on_message_acked/3, on_message_dropped/3]).
 
--define(LOG(Level, Format, Args), emqx_logger:Level("KafkaBridge: " ++ Format, Args)).
+% -define(LOG(Level, Format, Args), emqx_logger:Level("KafkaBridge: " ++ Format, Args)).
 
 %% Called when the plugin application start
 load(Env) ->
@@ -53,8 +53,8 @@ on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, Con
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
-    ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, Payload:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, Payload]),
-    produce_kafka_payload(Connected, ClientId, Payload,_Env),
+    % ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, Payload:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, Payload]),
+    produce_kafka_payload(Connected, Username, Payload,_Env),
     ok.
 
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
@@ -62,8 +62,8 @@ on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCod
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
     Disconnected = proplists:get_value(disconnected, _Env),
-    ?LOG(error, "client-disconnected: client_id:~s , username:~s, ReasonCode:~w", [ClientId,Username,ReasonCode]),
-    produce_kafka_payload(Disconnected, ClientId, Payload, _Env),
+    % ?LOG(error, "client-disconnected: client_id:~s , username:~s, ReasonCode:~w", [ClientId,Username,ReasonCode]),
+    produce_kafka_payload(Disconnected, Username, Payload, _Env),
     ok.
 
 on_client_subscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
@@ -159,10 +159,10 @@ unload() ->
     emqx:unhook('message.acked', fun ?MODULE:on_message_acked/3),
     emqx:unhook('message.dropped', fun ?MODULE:on_message_dropped/3).
 
-produce_kafka_payload(Key, ClientId, Message, _Env) ->
+produce_kafka_payload(Key, Username, Message, _Env) ->
     {ok, MessageBody} = emqx_json:safe_encode(Message),
     % MessageBody64 = base64:encode_to_string(MessageBody),
     Payload = iolist_to_binary(MessageBody),
     Partition = proplists:get_value(partition, _Env),
     Topic = iolist_to_binary(Key),
-    brod:produce_sync(brod_client_1, Topic, getPartiton(Key,Partition), ClientId, Payload).
+    brod:produce_sync(brod_client_1, Topic, getPartiton(Key,Partition), Username, Payload).
