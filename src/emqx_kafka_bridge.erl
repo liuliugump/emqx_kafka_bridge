@@ -46,11 +46,23 @@ load(Env) ->
     emqx:hook('message.acked', fun ?MODULE:on_message_acked/3, [Env]),
     emqx:hook('message.dropped', fun ?MODULE:on_message_dropped/3, [Env]).
 
-on_client_connected(#{client_id := ClientId}, ConnAck, ConnAttrs, _Env) ->
-    io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
+on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, ConnAttrs, _Env) ->
+    % io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
+    Now = erlang:timestamp(),
+    Payload = [{client_id, ClientId}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
+    Connected = proplists:get_value(connected, _Env),
+    Partition = proplists:get_value(partition, _Env),
+    brod:produce_sync(brod_client_1, Connected, getPartiton(ClientId,Partition), ClientId, Payload),
+    ok.
 
-on_client_disconnected(#{client_id := ClientId}, ReasonCode, _Env) ->
-    io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
+on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
+    % io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
+    Now = erlang:timestamp(),
+    Payload = [{client_id, ClientId}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    Disconnected = proplists:get_value(disconnected, _Env),
+    Partition = proplists:get_value(partition, _Env),
+    brod:produce_sync(brod_client_1, Disconnected, getPartiton(ClientId,Partition), ClientId, Payload),
+    ok.
 
 on_client_subscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
     io:format("Client(~s) will subscribe: ~p~n", [ClientId, RawTopicFilters]),
@@ -123,7 +135,7 @@ brod_init(_Env) ->
     {ok, BootstrapBroker} = application:get_env(?APP, broker),
     {ok, ClientConfig} = application:get_env(?APP, client),
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
-    io:format("Init ekaf with ~p~n", [BootstrapBroker]).
+    io:format("Init brod with ~p~n", [BootstrapBroker]).
 
 getPartiton(Key, Partitions) ->
      <<Fix:120, Match:8>> = crypto:hash(md5, Key),

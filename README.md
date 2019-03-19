@@ -7,12 +7,12 @@ git clone https://github.com/emqtt/emq-relx.git
 ```
 2. Add DEPS of the plugin in the Makefile
 ```
-DEPS += emqttd_kafka_bridge
-dep_emqttd_kafka_bridge = git https://xxxxxxxxxxx.git master
+DEPS += emqx_kafka_bridge
+dep_emqx_kafka_bridge = git https://github.com/playInfo/emqx_kafka_bridge.git release
 ```
 3. Add load plugin in relx.config
 ```
-{emqttd_kafka_bridge, load},
+{emqx_kafka_bridge, load},
  ```
 4. Build
 ```
@@ -22,23 +22,21 @@ Configuration
 ----------------------
 You will have to edit the configurations of the bridge to set the kafka Ip address and port.
 
-Edit the file emq-relx/deps/emqttd_kafka_bridge/etc/emqttd_kafka_bridge.config
+Edit the file emq-relx/deps/emqx_kafka_bridge/etc/emqx_kafka_bridge.config
 ```
-[
-  {emqttd_kafka_bridge, [{values, [
-      {bootstrap_broker, [{"172.19.3.186", 9092}] },
-      {query_api_versions,false},
-      {reconnect_cool_down_seconds, 10},
-      {kafka_producer_partitions, 1}
-    ]}]}
-]
+ emqx.kafka.bridge.broker = 172.19.16.67:19092, 172.19.16.68:19092, 172.19.16.69:19092
+ emqx.kafka.bridge.partition = 10
+ emqx.kafka.bridge.client.flag = auto_start_producers:true, allow_topic_auto_creation:false, query_api_versions:false
+ emqx.kafka.bridge.client.integer = reconnect_cool_down_seconds:10
+ emqx.kafka.bridge.regex = ^(client|device|paas)/products/(\\S+)/devices/(\\S+)/(command)(/\\S+)*$
+ emqx.kafka.bridge.topic = device:saas_device_downstream, client:saas_client_downstream, paas: paas_sqdata_upstream
 ```
 
 Start the EMQ broker and load the plugin 
 -----------------
-1) cd emq-relx/_rel/emqttd
-2) ./bin/emqttd start
-3) ./bin/emqttd_ctl plugins load emqttd_kafka_bridge
+1) cd emq-relx/_rel/emqx
+2) ./bin/emqx start
+3) ./bin/emqx_ctl plugins load emqx_kafka_bridge
 
 
 
