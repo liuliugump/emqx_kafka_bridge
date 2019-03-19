@@ -54,7 +54,8 @@ on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, Con
     Payload = [{client_id, ClientId}, {username, Username}, {conn_ack, ConnAck}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
     ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, Payload:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, Payload]),
-    produce_kafka_payload(Connected, ClientId, Payload).
+    produce_kafka_payload(Connected, ClientId, Payload,_Env),
+    ok.
 
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
     % io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
@@ -62,7 +63,8 @@ on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCod
     Payload = [{client_id, ClientId}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
     Disconnected = proplists:get_value(disconnected, _Env),
     ?LOG(error, "client-disconnected: client_id:~s , username:~s, ReasonCode:~w", [ClientId,Username,ReasonCode]),
-    produce_kafka_payload(Disconnected, ClientId, Payload).
+    produce_kafka_payload(Disconnected, ClientId, Payload, _Env),
+    ok.
 
 on_client_subscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
     io:format("Client(~s) will subscribe: ~p~n", [ClientId, RawTopicFilters]),
@@ -157,7 +159,7 @@ unload() ->
     emqx:unhook('message.acked', fun ?MODULE:on_message_acked/3),
     emqx:unhook('message.dropped', fun ?MODULE:on_message_dropped/3).
 
-produce_kafka_payload(Topic, ClientId, Message) ->
+produce_kafka_payload(Topic, ClientId, Message, _Env) ->
     {ok, MessageBody} = emqx_json:safe_encode(Message),
     % MessageBody64 = base64:encode_to_string(MessageBody),
     Payload = iolist_to_binary(MessageBody),
