@@ -118,7 +118,7 @@ on_message_publish(Message = #message{id = MsgId,
                   {ok, MessageBody} = emqx_json:safe_encode(Msg),
                   ?LOG(error, "on_message_publish: safe_encode:~s", [MessageBody]),
                   MsgPayload = iolist_to_binary(MessageBody),
-                  ?LOG(error, "on_message_publish: iolist_to_binary:~s", [Payload]),
+                  ?LOG(error, "on_message_publish: iolist_to_binary:~s", [MsgPayload]),
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, MsgPayload)
         end,
        {ok, Message}
