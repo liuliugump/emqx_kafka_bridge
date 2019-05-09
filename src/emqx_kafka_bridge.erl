@@ -106,7 +106,8 @@ on_message_publish(Message = #message{id = MsgId,
     ?LOG(error, "on_message_publish_MP: MP:~s", [MP]),
     case re:run(Topic, MP, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
-       {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,	
+       {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,
+	 ?LOG(error, "on_message_publish_Fix: Fix:~s", [Fix]),
          Topics = proplists:get_value(topic, _Env),
          case proplists:get_value(Type, Topics) of
              undefined -> io:format("publish no match topic ~s", [Type]);
