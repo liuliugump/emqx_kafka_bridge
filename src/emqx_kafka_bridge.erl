@@ -29,7 +29,7 @@
 -export([on_session_subscribed/4, on_session_unsubscribed/4]).
 -export([on_message_publish/2, on_message_delivered/3, on_message_acked/3, on_message_dropped/3]).
 
--define(LOG(Level, Format, Args), emqx_logger:Level("KafkaBridge: " ++ Format, Args)).
+% -define(LOG(Level, Format, Args), emqx_logger:Level("KafkaBridge: " ++ Format, Args)).
 
 %% Called when the plugin application start
 load(Env) ->
@@ -103,7 +103,6 @@ on_message_publish(Message = #message{id = MsgId,
 						}, _Env) -> 
     io:format("publish ~s~n", [emqx_message:format(Message)]),
     MP =  proplists:get_value(regex, _Env),
-    ?LOG(error, "on_message_publish_MP: MP:~s", [MP]),
     case re:run(Topic, MP, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,	
@@ -112,15 +111,11 @@ on_message_publish(Message = #message{id = MsgId,
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
                   Key = iolist_to_binary([ProductId,"_",DevKey]),
-                  ?LOG(error, "on_message_publish_Key: MSM:~s", Key),
                   Partition = proplists:get_value(partition, _Env),
                   Now = erlang:timestamp(),
                   Msg = [{client_id, From}, {node, node()}, {qos, Qos}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
-                  ?LOG(error, "on_message_publish: MSM:~s", [Msg]),
                   {ok, MessageBody} = emqx_json:safe_encode(Msg),
-                  ?LOG(error, "on_message_publish: safe_encode:~s", [MessageBody]),
                   MsgPayload = iolist_to_binary(MessageBody),
-                  ?LOG(error, "on_message_publish: iolist_to_binary:~s", [MsgPayload]),
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, MsgPayload)
         end,
        {ok, Message}
