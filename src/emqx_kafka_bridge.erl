@@ -103,6 +103,7 @@ on_message_publish(Message = #message{id = MsgId,
 						}, _Env) -> 
     io:format("publish ~s~n", [emqx_message:format(Message)]),
     MP =  proplists:get_value(regex, _Env),
+    ?LOG(error, "on_message_publish_MP: MP:~s", [MP]),
     case re:run(Topic, MP, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,	
@@ -111,6 +112,7 @@ on_message_publish(Message = #message{id = MsgId,
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
                   Key = iolist_to_binary([ProductId,"_",DevKey]),
+                  ?LOG(error, "on_message_publish_Key: MSM:~s", Key),
                   Partition = proplists:get_value(partition, _Env),
                   Now = erlang:timestamp(),
                   Msg = [{client_id, From}, {node, node()}, {qos, Qos}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
