@@ -112,7 +112,7 @@ on_message_publish(Message = #message{id = MsgId,
          case proplists:get_value(Type, Topics) of
              undefined -> io:format("publish no match topic ~s", [Type]);
              ProduceTopic -> 
-                  Key = iolist_to_binary([ProductId,"_",DevKey]),
+                  Key = iolist_to_binary([ProductId,"_",DevKey,"_",Fix]),
                   ?LOG(error, "on_message_publish_Key: Key:~s", [Key]),
                   Partition = proplists:get_value(partition, _Env),
                   Now = erlang:timestamp(),
