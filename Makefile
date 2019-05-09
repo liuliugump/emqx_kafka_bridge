@@ -1,6 +1,6 @@
 PROJECT = emqx_kafka_bridge
-PROJECT_DESCRIPTION = mqtt kafka bridge
-PROJECT_VERSION = 3.1.1
+PROJECT_DESCRIPTION = MQTT KAFKA BRIDGE
+PROJECT_VERSION = 3.1.0
 
 CUR_BRANCH := $(shell git branch | grep -e "^*" | cut -d' ' -f 2)
 BRANCH := $(if $(filter $(CUR_BRANCH), master develop), $(CUR_BRANCH), develop)
