@@ -23,12 +23,8 @@
 
 start(_StartType, _StartArgs) ->
     {ok, Sup} = emqx_kafka_bridge_sup:start_link(),
-    ok = emqx_access_control:register_mod(auth, emqx_auth_kafka_bridge, []),
-    ok = emqx_access_control:register_mod(acl, emqx_acl_kafka_bridge, []),
     emqx_kafka_bridge:load(application:get_all_env()),
     {ok, Sup}.
 
 stop(_State) ->
-    ok = emqx_access_control:unregister_mod(auth, emqx_auth_kafka_bridge),
-    ok = emqx_access_control:unregister_mod(acl, emqx_acl_kafka_bridge),
     emqx_kafka_bridge:unload().
