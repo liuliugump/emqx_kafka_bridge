@@ -1,29 +1,40 @@
+## shallow clone for speed
+
 PROJECT = emqx_kafka_bridge
-PROJECT_DESCRIPTION = MQTT KAFKA BRIDGE
-PROJECT_VERSION = 3.1.1
+PROJECT_DESCRIPTION = EMQ X kafka bridge Plugin
+PROJECT_VERSION = 3.2.0
 
-CUR_BRANCH := $(shell git branch | grep -e "^*" | cut -d' ' -f 2)
-BRANCH := $(if $(filter $(CUR_BRANCH), master develop), $(CUR_BRANCH), develop)
+REBAR_GIT_CLONE_OPTIONS += --depth 1
+export REBAR_GIT_CLONE_OPTIONS
 
-DEPS = brod 
-dep_brod = git-emqx https://github.com/klarna/brod master
+REBAR = rebar3
+all: compile
 
-BUILD_DEPS = emqx cuttlefish supervisor3 kafka_protocol
-dep_emqx = git-emqx https://github.com/emqx/emqx $(BRANCH)
-dep_cuttlefish = git-emqx https://github.com/emqx/cuttlefish v2.2.1
-dep_supervisor3 = git-emqx https://github.com/klarna/supervisor3 1.1.8
-dep_kafka_protocol = git-emqx https://github.com/klarna/kafka_protocol 2.2.7
+compile:
+	$(REBAR) compile
 
-ERLC_OPTS += +debug_info
+clean: distclean
 
-NO_AUTOPATCH = cuttlefish
+ct: compile
+	$(REBAR) as test ct -v
 
-COVER = true
+clean: distclean
 
-$(shell [ -f erlang.mk ] || curl -s -o erlang.mk https://raw.githubusercontent.com/emqx/erlmk/master/erlang.mk)
-include erlang.mk
+eunit: compile
+	$(REBAR) as test eunit
 
-app:: rebar.config
+xref:
+	$(REBAR) xref
 
-app.config::
-	./deps/cuttlefish/cuttlefish -l info -e etc/ -c etc/emqx_kafka_bridge.conf -i priv/emqx_kafka_bridge.schema -d data
+distclean:
+	@rm -rf _build
+	@rm -f data/app.*.config data/vm.*.args rebar.lock
+
+CUTTLEFISH_SCRIPT = _build/default/lib/cuttlefish/cuttlefish
+
+$(CUTTLEFISH_SCRIPT):
+	@${REBAR} get-deps
+	@if [ ! -f cuttlefish ]; then make -C _build/default/lib/cuttlefish; fi
+
+app.config: $(CUTTLEFISH_SCRIPT) etc/emqx_kafka_bridge.conf
+	$(verbose) $(CUTTLEFISH_SCRIPT) -l info -e etc/ -c etc/emqx_kafka_bridge.conf -i priv/emqx_kafka_bridge.schema -d data
