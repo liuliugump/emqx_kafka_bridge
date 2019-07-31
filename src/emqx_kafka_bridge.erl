@@ -71,12 +71,12 @@ on_client_unsubscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
     {ok, RawTopicFilters}.
 
 %% 会话创建
-on_session_created(#{client_id := ClientId, username := Username}, SessAttrs, _Env) ->
+on_session_created(#{client_id := ClientId}, SessAttrs, _Env) ->
     % io:format("Session(~s) created: ~p~n", [ClientId, SessAttrs]),
     Now = erlang:timestamp(),
-    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {ts, emqx_time:now_secs(Now)}],
+    Payload = [{client_id, ClientId}, {node, node()}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
-    produce_kafka_payload(Connected, Username, Payload,_Env).
+    produce_kafka_payload(Connected, ClientId, Payload,_Env).
 
 %% 会话恢复
 on_session_resumed(#{client_id := ClientId}, SessAttrs, _Env) ->
