@@ -73,14 +73,10 @@ on_client_unsubscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
 %% 会话创建
 on_session_created(#{client_id := ClientId}, SessAttrs, _Env) ->
     io:format("Session(~s) created: ~p~n", [ClientId, SessAttrs]),
-<<<<<<< HEAD
     Payload = [{client_id, ClientId}, {node, node()}],
-=======
-    Payload = [{client_id, ClientId}, {node, node()}}],
->>>>>>> 0ae7ae49e49f12c1cbfcf45e827c35505e5b4047
     Connected = proplists:get_value(connected, _Env),
     % ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, Payload:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, Payload]),
-    produce_kafka_payload(Connected, ClientId, Payload,_Env).
+    produce_kafka_payload(Connected, ClientId, Payload, _Env).
 
 %% 会话恢复
 on_session_resumed(#{client_id := ClientId}, SessAttrs, _Env) ->
