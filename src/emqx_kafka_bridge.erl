@@ -76,8 +76,7 @@ on_session_created(#{client_id := ClientId, username := Username}, SessAttrs, _E
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
-    produce_kafka_payload(Connected, Username, Payload,_Env),
-    {ok, SessAttrs}.
+    produce_kafka_payload(Connected, Username, Payload,_Env).
 
 %% 会话恢复
 on_session_resumed(#{client_id := ClientId}, SessAttrs, _Env) ->
@@ -89,8 +88,7 @@ on_session_subscribed(#{client_id := ClientId, username := Username}, Topic, Sub
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
     Subscribed = proplists:get_value(subscribed, _Env),
-    produce_kafka_payload(Subscribed, Username, Payload,_Env),
-    {ok, {Topic, SubOpts}}.
+    produce_kafka_payload(Subscribed, Username, Payload,_Env).
 
 %% 会话取消订阅主题后
 on_session_unsubscribed(#{client_id := ClientId}, Topic, Opts, _Env) ->
