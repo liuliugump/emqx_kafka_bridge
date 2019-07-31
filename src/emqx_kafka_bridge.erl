@@ -48,7 +48,13 @@ load(Env) ->
 
 %% 客户端上线
 on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, ConnAttrs, _Env) ->
-    io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
+    io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]),
+    Now = erlang:timestamp(),
+    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {conn_ack, ConnAck}, {conn_attr, ConnAttrs}, {ts, emqx_time:now_secs(Now)}],
+    Connected = proplists:get_value(connected, _Env),
+    % ?LOG(error, "client-connected: topic:~s, client_id:~s , username:~s, conn_ack:~w, conn_attrs:~p~n, Payload:~s", [Connected, ClientId, Username, ConnAck, ConnAttrs, Payload]),
+    produce_kafka_payload(Connected, Username, Payload,_Env),
+    ok.
 
 %% 客户端连接断开
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
@@ -72,11 +78,7 @@ on_client_unsubscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
 
 %% 会话创建
 on_session_created(#{client_id := ClientId}, SessAttrs, _Env) ->
-    % io:format("Session(~s) created: ~p~n", [ClientId, SessAttrs]),
-    Now = erlang:timestamp(),
-    Payload = [{client_id, ClientId}, {node, node()}, {ts, emqx_time:now_secs(Now)}],
-    Connected = proplists:get_value(connected, _Env),
-    produce_kafka_payload(Connected, ClientId, Payload,_Env).
+    io:format("Session(~s) created: ~p~n", [ClientId, SessAttrs]).
 
 %% 会话恢复
 on_session_resumed(#{client_id := ClientId}, SessAttrs, _Env) ->
@@ -88,7 +90,7 @@ on_session_subscribed(#{client_id := ClientId, username := Username}, Topic, Sub
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
     Subscribed = proplists:get_value(subscribed, _Env),
-    produce_kafka_payload(Subscribed, Username, Payload,_Env).
+    produce_kafka_payload(Subscribed, Username, Payload, _Env).
 
 %% 会话取消订阅主题后
 on_session_unsubscribed(#{client_id := ClientId}, Topic, Opts, _Env) ->
