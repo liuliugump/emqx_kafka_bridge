@@ -88,13 +88,13 @@ on_session_subscribed(#{client_id := ClientId, username := Username}, Topic, Sub
     io:format("Session(~s) subscribe ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]),
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
-    Connected = proplists:get_value(connected, _Env),
-    produce_kafka_payload(Connected, Username, Payload,_Env),
+    Subscribed = proplists:get_value(subscribed, _Env),
+    produce_kafka_payload(Subscribed, Username, Payload,_Env),
     ok.
 
 %% 会话取消订阅主题后
 on_session_unsubscribed(#{client_id := ClientId}, Topic, Opts, _Env) ->
-    io:format("Session(~s) unsubscribe ~s with opts: ~p~n", [ClientId, Topic, Opts])
+    io:format("Session(~s) unsubscribe ~s with opts: ~p~n", [ClientId, Topic, Opts]).
 
 %% 会话终止
 on_session_terminated(#{client_id := ClientId}, ReasonCode, _Env) ->
