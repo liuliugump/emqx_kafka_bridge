@@ -46,32 +46,57 @@ load(Env) ->
     emqx:hook('message.acked', fun ?MODULE:on_message_acked/3, [Env]),
     emqx:hook('message.dropped', fun ?MODULE:on_message_dropped/3, [Env]).
 
+%% 客户端上线
 on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, ConnAttrs, _Env) ->
     io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
 
+%% 客户端连接断开
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
-    io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
+    io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]),
+    Now = erlang:timestamp(),
+    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    Disconnected = proplists:get_value(disconnected, _Env),
+    % ?LOG(error, "client-disconnected: client_id:~s , username:~s, ReasonCode:~w", [ClientId,Username,ReasonCode]),
+    produce_kafka_payload(Disconnected, Username, Payload, _Env),
+    ok.
 
+%% 客户端订阅主题
 on_client_subscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
     io:format("Client(~s) will subscribe: ~p~n", [ClientId, RawTopicFilters]),
     {ok, RawTopicFilters}.
 
+%% 客户端取消订阅主题
 on_client_unsubscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
     io:format("Client(~s) unsubscribe ~p~n", [ClientId, RawTopicFilters]),
     {ok, RawTopicFilters}.
 
-on_session_created(#{client_id := ClientId}, SessAttrs, _Env) ->
-    io:format("Session(~s) created: ~p~n", [ClientId, SessAttrs]).
+%% 会话创建
+on_session_created(#{client_id := ClientId, username := Username}, SessAttrs, _Env) ->
+    io:format("Session(~s) created: ~p~n", [ClientId, SessAttrs]),
+    Now = erlang:timestamp(),
+    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {ts, emqx_time:now_secs(Now)}],
+    Connected = proplists:get_value(connected, _Env),
+    produce_kafka_payload(Connected, Username, Payload,_Env),
+    ok.
 
+%% 会话恢复
 on_session_resumed(#{client_id := ClientId}, SessAttrs, _Env) ->
     io:format("Session(~s) resumed: ~p~n", [ClientId, SessAttrs]).
 
-on_session_subscribed(#{client_id := ClientId}, Topic, SubOpts, _Env) ->
-    io:format("Session(~s) subscribe ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]).
+%% 会话订阅主题后
+on_session_subscribed(#{client_id := ClientId, username := Username}, Topic, SubOpts, _Env) ->
+    io:format("Session(~s) subscribe ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]),
+    Now = erlang:timestamp(),
+    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
+    Connected = proplists:get_value(connected, _Env),
+    produce_kafka_payload(Connected, Username, Payload,_Env),
+    ok.
 
+%% 会话取消订阅主题后
 on_session_unsubscribed(#{client_id := ClientId}, Topic, Opts, _Env) ->
-    io:format("Session(~s) unsubscribe ~s with opts: ~p~n", [ClientId, Topic, Opts]).
+    io:format("Session(~s) unsubscribe ~s with opts: ~p~n", [ClientId, Topic, Opts])
 
+%% 会话终止
 on_session_terminated(#{client_id := ClientId}, ReasonCode, _Env) ->
     io:format("Session(~s) terminated: ~p.", [ClientId, ReasonCode]).
 
@@ -107,14 +132,17 @@ on_message_publish(Message = #message{id = MsgId,
        {ok, Message}
     end.
 
+%% MQTT 消息进行投递
 on_message_delivered(#{client_id := ClientId}, Message, _Env) ->
     io:format("Delivered message to client(~s): ~s~n", [ClientId, emqx_message:format(Message)]),
     {ok, Message}.
 
+%% MQTT 消息回执
 on_message_acked(#{client_id := ClientId}, Message, _Env) ->
     io:format("Session(~s) acked message: ~s~n", [ClientId, emqx_message:format(Message)]),
     {ok, Message}.
 
+%% MQTT 消息丢弃
 on_message_dropped(_By, #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     ok;
 on_message_dropped(#{node := Node}, Message, _Env) ->

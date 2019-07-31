@@ -38,6 +38,11 @@
   {default, "mqtt_client_disconnected"}
 ]}.
 
+{mapping, "emqx.kafka.bridge.hook.client.subscribed.topic", "emqx_kafka_bridge.subscribed", [
+  {datatype, string},
+  {default, "mqtt_client_subscribed"}
+]}.
+
 {translation, "emqx_kafka_bridge.broker", fun(Conf) ->
   Broker = cuttlefish:conf_get("emqx.kafka.bridge.broker", Conf),
   BrokerList = string:split(Broker, ",", all),
