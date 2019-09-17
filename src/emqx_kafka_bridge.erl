@@ -48,7 +48,13 @@ load(Env) ->
 
 %% 客户端上线
 on_client_connected(#{client_id := ClientId}, ConnAck, ConnAttrs, _Env) ->
-    io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
+    io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]),
+    Now = erlang:timestamp(),
+    Payload = [{client_id, ClientId}, {node, node()}, {username, Username},{ts, emqx_time:now_secs(Now)}],
+    Connected = proplists:get_value(connected, _Env),
+    produce_kafka_payload(Connected, Username, Payload, _Env),
+    ok.
+
 
 %% 客户端连接断开
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
@@ -181,4 +187,5 @@ produce_kafka_payload(Key, Username, Message, _Env) ->
     Payload = iolist_to_binary(MessageBody),
     Partition = proplists:get_value(partition, _Env),
     Topic = iolist_to_binary(Key),
+
     brod:produce_sync(brod_client_1, Topic, getPartiton(Username,Partition), Username, Payload).
