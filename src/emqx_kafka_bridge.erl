@@ -47,7 +47,7 @@ load(Env) ->
     emqx:hook('message.dropped', fun ?MODULE:on_message_dropped/3, [Env]).
 
 %% 客户端上线
-on_client_connected(#{client_id := ClientId}, ConnAck, ConnAttrs, _Env) ->
+on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, ConnAttrs, _Env) ->
     io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]),
     Now = erlang:timestamp(),
     Payload = [{client_id, ClientId}, {node, node()}, {username, Username},{ts, emqx_time:now_secs(Now)}],
