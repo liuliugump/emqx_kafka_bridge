@@ -2,7 +2,7 @@
 
 This is a plugin for the EMQX broker that sends all messages received by the broker to kafka.
 
-   注意：插件目前适配的是emqx V3.2.0
+   注意：插件release版本目前适配的是emqx V3.2.0
 
 ## Build the EMQ broker
 -------------
@@ -56,6 +56,18 @@ Start the EMQ broker and load the plugin
 2) ./bin/emqx start
 3) ./bin/emqx_ctl plugins load emqx_kafka_bridge
 
+Kafka Topic :
+----------------------
+
+1.mqtt_client_connected : Produce a message when an client  connect to the broker
 
 
+2.mqtt_client_disconnected : Produce a message when the client closed/disconnected
 
+3.mqtt_client_subscribed : Produce a message when an  client  subscribed
+
+4.saas_device_downstream : When a client send a message with topic "device/products/astring/devices/astring/command/astring"
+
+5.saas_client_downstream : When a client send a message with topic "client/products/astring/devices/astring/command/astring"
+
+6.paas_sqdata_upstream :  When a client send a message with topic "paas/products/astring/devices/astring/command/astring"
