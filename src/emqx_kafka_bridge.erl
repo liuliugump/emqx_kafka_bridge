@@ -122,7 +122,7 @@ on_message_publish(Message = #message{id = MsgId,
 						}, _Env) -> 
     io:format("publish ~s~n", [emqx_message:format(Message)]),
     MP =  proplists:get_value(regex, _Env),
-
+    Username = emqx_message:get_header(username,Message),
     case re:run(Topic, MP, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,
@@ -133,7 +133,7 @@ on_message_publish(Message = #message{id = MsgId,
                   Key = iolist_to_binary([ProductId,"_",DevKey,"_",Fix]),
                   Partition = proplists:get_value(partition, _Env),
                   Now = erlang:timestamp(),
-                  Msg = [{client_id, From}, {action, <<"message_publish">>},{topic,ProduceTopic}, {qos, Qos}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
+                  Msg = [{client_id, From}, {action, <<"message_publish">>},{topic,Topic},{username,Username}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
                   {ok, MessageBody} = emqx_json:safe_encode(Msg),
                   MsgPayload = iolist_to_binary(MessageBody),
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, MsgPayload)
