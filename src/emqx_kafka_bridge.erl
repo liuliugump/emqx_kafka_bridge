@@ -60,7 +60,8 @@ on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, Con
 on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCode, _Env) ->
     io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]),
     Now = erlang:timestamp(),
-    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    Action = <<"disconnected">>,
+    Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
     Disconnected = proplists:get_value(disconnected, _Env),
     produce_kafka_payload(Disconnected, Username, Payload, _Env),
     ok.
@@ -79,8 +80,9 @@ on_client_unsubscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
 on_session_created(#{client_id := ClientId}, SessAttrs, _Env) ->
     io:format("Session(~s) created: ~p~n", [ClientId, SessAttrs]),
     Now = erlang:timestamp(),
+    Action = <<"connected">>,
     Username = proplists:get_value(username, SessAttrs),
-    Payload = [{client_id, ClientId}, {username, Username}, {node, node()},  {ts, emqx_time:now_secs(Now)}],
+    Payload = [{client_id, ClientId}, {username, Username}, {action, Action},  {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
     produce_kafka_payload(Connected, Username, Payload, _Env).
 
@@ -93,7 +95,8 @@ on_session_resumed(#{client_id := ClientId}, SessAttrs, _Env) ->
 on_session_subscribed(#{client_id := ClientId, username := Username}, Topic, SubOpts, _Env) ->
     io:format("Session(~s) subscribe ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]),
     Now = erlang:timestamp(),
-    Payload = [{client_id, ClientId}, {node, node()}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
+    Action = <<"subscribed">>,
+    Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
     Subscribed = proplists:get_value(subscribed, _Env),
     produce_kafka_payload(Subscribed, Username, Payload, _Env).
 
@@ -119,6 +122,7 @@ on_message_publish(Message = #message{id = MsgId,
 						}, _Env) -> 
     io:format("publish ~s~n", [emqx_message:format(Message)]),
     MP =  proplists:get_value(regex, _Env),
+
     case re:run(Topic, MP, [{capture, all_but_first, list}]) of
        nomatch -> {ok, Message};
        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,
@@ -129,7 +133,7 @@ on_message_publish(Message = #message{id = MsgId,
                   Key = iolist_to_binary([ProductId,"_",DevKey,"_",Fix]),
                   Partition = proplists:get_value(partition, _Env),
                   Now = erlang:timestamp(),
-                  Msg = [{client_id, From}, {node, node()}, {qos, Qos}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
+                  Msg = [{client_id, From}, {action, <<"message_publish">>},{topic,ProduceTopic}, {qos, Qos}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
                   {ok, MessageBody} = emqx_json:safe_encode(Msg),
                   MsgPayload = iolist_to_binary(MessageBody),
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Key, MsgPayload)
