@@ -48,7 +48,7 @@ load(Env) ->
 
 %% 客户端上线
 on_client_connected(#{client_id := ClientId, username := Username}, ConnAck, ConnAttrs, _Env) ->
-    % io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]),
+    io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]),
     % Now = erlang:timestamp(),
     % Payload = [{client_id, ClientId}, {node, node()}, {username, Username},{ts, emqx_time:now_secs(Now)}],
     % Connected = proplists:get_value(connected, _Env),
@@ -68,12 +68,12 @@ on_client_disconnected(#{client_id := ClientId, username := Username}, ReasonCod
 
 %% 客户端订阅主题
 on_client_subscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
-    % io:format("Client(~s) will subscribe: ~p~n", [ClientId, RawTopicFilters]),
+    io:format("Client(~s) will subscribe: ~p~n", [ClientId, RawTopicFilters]),
     {ok, RawTopicFilters}.
 
 %% 客户端取消订阅主题
 on_client_unsubscribe(#{client_id := ClientId}, RawTopicFilters, _Env) ->
-    % io:format("Client(~s) unsubscribe ~p~n", [ClientId, RawTopicFilters]),
+    io:format("Client(~s) unsubscribe ~p~n", [ClientId, RawTopicFilters]),
     {ok, RawTopicFilters}.
 
 %% 会话创建
@@ -88,7 +88,7 @@ on_session_created(#{client_id := ClientId}, SessAttrs, _Env) ->
 
 %% 会话恢复
 on_session_resumed(#{client_id := ClientId}, SessAttrs, _Env) ->
-    % io:format("Session(~s) resumed: ~p~n", [ClientId, SessAttrs])
+    io:format("Session(~s) resumed: ~p~n", [ClientId, SessAttrs]),
     ok.
 
 %% 会话订阅主题后
@@ -102,11 +102,11 @@ on_session_subscribed(#{client_id := ClientId, username := Username}, Topic, Sub
 
 %% 会话取消订阅主题后
 on_session_unsubscribed(#{client_id := ClientId}, Topic, Opts, _Env) ->
-    % io:format("Session(~s) unsubscribe ~s with opts: ~p~n", [ClientId, Topic, Opts]).
+    io:format("Session(~s) unsubscribe ~s with opts: ~p~n", [ClientId, Topic, Opts]),
     ok.
 %% 会话终止
 on_session_terminated(#{client_id := ClientId}, ReasonCode, _Env) ->
-    % io:format("Session(~s) terminated: ~p.", [ClientId, ReasonCode]).
+    io:format("Session(~s) terminated: ~p.", [ClientId, ReasonCode]),
     ok.
 %% Transform message and return
 on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
@@ -120,7 +120,7 @@ on_message_publish(Message = #message{id = MsgId,
                         payload = Payload,
                         timestamp  = Time
 						}, _Env) -> 
-    io:format("publish ~s~n", [emqx_message:format(Message)]),
+    io:format("client publish ~s~n", [emqx_message:format(Message)]),
     MP =  proplists:get_value(regex, _Env),
     Username = emqx_message:get_header(username,Message),
     case re:run(Topic, MP, [{capture, all_but_first, list}]) of
