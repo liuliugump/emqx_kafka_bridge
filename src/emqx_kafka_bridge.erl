@@ -134,8 +134,9 @@ on_message_publish(Message = #message{id = MsgId,
                   Partition = proplists:get_value(partition, _Env),
                   Now = erlang:timestamp(),
                   Msg = [{client_id, From}, {action, <<"message_publish">>},{topic,Topic},{username,Username}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
-                  {ok, MessageBody} = emqx_json:safe_encode(Msg),
-                  MsgPayload = iolist_to_binary(MessageBody),
+                %   {ok, MessageBody} = emqx_json:safe_encode(Msg),
+                %   MsgPayload = iolist_to_binary(MessageBody),
+                  MsgPayload = iolist_to_binary(Msg),
                   ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Username, MsgPayload)
         end,
        {ok, Message}
