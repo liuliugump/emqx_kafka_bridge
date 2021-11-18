@@ -1,6 +1,6 @@
 {mapping, "emqx.kafka.bridge.broker", "emqx_kafka_bridge.broker", [
   {datatype, string},
-  {default, "10.4.23.16:9092"}
+  {default, "10.4.23.25:9092"}
 ]}.
 
 {mapping, "emqx.kafka.bridge.partition", "emqx_kafka_bridge.partition", [
