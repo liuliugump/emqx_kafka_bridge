@@ -22,6 +22,9 @@
         , unload/0
         ]).
 
+-define(APP, emqx_plugin_kafka_bridge).
+
+
 %% Client Lifecircle Hooks
 -export([ on_client_connected/3
         , on_client_disconnected/4
@@ -51,8 +54,6 @@ load(Env) ->
     brod_init([Env]),
     emqx:hook('client.connected',    {?MODULE, on_client_connected, [Env]}),
     emqx:hook('client.disconnected', {?MODULE, on_client_disconnected, [Env]}),
-    emqx:hook('client.authenticate', {?MODULE, on_client_authenticate, [Env]}),
-    emqx:hook('client.check_acl',    {?MODULE, on_client_check_acl, [Env]}),
     emqx:hook('client.subscribe',    {?MODULE, on_client_subscribe, [Env]}),
     emqx:hook('client.unsubscribe',  {?MODULE, on_client_unsubscribe, [Env]}),
     emqx:hook('session.created',     {?MODULE, on_session_created, [Env]}),
@@ -109,7 +110,7 @@ on_session_created(#{clientid := ClientId}, SessInfo, _Env) ->
     Username = proplists:get_value(username, SessInfo),
     Payload = [{client_id, ClientId}, {username, Username}, {action, Action},  {ts, emqx_time:now_secs(Now)}],
     Connected = proplists:get_value(connected, _Env),
-    produce_kafka_payload(Connected, Username, Payload, _Env)
+    produce_kafka_payload(Connected, Username, Payload, _Env).
 
 on_session_subscribed(#{clientid := ClientId, username := Username}, Topic, SubOpts, _Env) ->
     io:format("Session(~s) subscribed ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]),
@@ -227,5 +228,4 @@ produce_kafka_payload(Key, Username, Message, _Env) ->
     Payload = iolist_to_binary(MessageBody),
     Partition = proplists:get_value(partition, _Env),
     Topic = iolist_to_binary(Key),
-
     brod:produce_sync(brod_client_1, Topic, getPartiton(Username,Partition), Username, Payload).
