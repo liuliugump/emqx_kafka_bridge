@@ -14,13 +14,17 @@
 %% limitations under the License.
 %%--------------------------------------------------------------------
 
--module(emqx_cli_kafka_bridge).
+-module(emqx_plugin_kafka_bridge_sup).
 
--export([cmd/1]).
+-behaviour(supervisor).
 
-cmd(["arg1", "arg2"]) ->
-    emqx_ctl:print("ok");
+-export([start_link/0]).
 
-cmd(_) ->
-    emqx_ctl:usage([{"cmd arg1 arg2", "cmd demo"}]).
+-export([init/1]).
+
+start_link() ->
+    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+init([]) ->
+    {ok, { {one_for_one, 5, 10}, []} }.
 

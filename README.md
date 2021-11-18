@@ -2,7 +2,7 @@
 
 This is a plugin for the EMQX broker that sends all messages received by the broker to kafka.
 
-   注意：插件release版本目前适配的是emqx V3.2.0
+   注意：插件release版本目前适配的是emqx V4.1.5
 
 ## Build the EMQ broker
 -------------

@@ -1,8 +1,7 @@
 ## shallow clone for speed
-
-PROJECT = emqx_kafka_bridge
+PROJECT = emqx_plugin_kafka_bridge
 PROJECT_DESCRIPTION = EMQ X kafka bridge Plugin
-PROJECT_VERSION = 3.2.0
+PROJECT_VERSION = 4.1.5
 
 REBAR_GIT_CLONE_OPTIONS += --depth 1
 export REBAR_GIT_CLONE_OPTIONS
@@ -13,18 +12,19 @@ all: compile
 compile:
 	$(REBAR) compile
 
-clean: distclean
-
 ct: compile
 	$(REBAR) as test ct -v
-
-clean: distclean
 
 eunit: compile
 	$(REBAR) as test eunit
 
 xref:
 	$(REBAR) xref
+
+cover:
+	$(REBAR) cover
+
+clean: distclean
 
 distclean:
 	@rm -rf _build
@@ -37,4 +37,4 @@ $(CUTTLEFISH_SCRIPT):
 	@if [ ! -f cuttlefish ]; then make -C _build/default/lib/cuttlefish; fi
 
 app.config: $(CUTTLEFISH_SCRIPT) etc/emqx_kafka_bridge.conf
-	$(verbose) $(CUTTLEFISH_SCRIPT) -l info -e etc/ -c etc/emqx_kafka_bridge.conf -i priv/emqx_kafka_bridge.schema -d data
+	$(verbose) $(CUTTLEFISH_SCRIPT) -l info -e etc/ -c etc/emqx_plugin_kafka_bridge.conf -i priv/emqx_plugin_kafka_bridge.schema -d data

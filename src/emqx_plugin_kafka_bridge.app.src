@@ -1,0 +1,14 @@
+{application, emqx_plugin_kafka_bridge,
+ [{description, "EMQ X Plugin kafka_bridge"},
+  {vsn, "git"},
+  {modules, []},
+  {registered, [emqx_plugin_kafka_bridge_sup]},
+  {applications, [kernel,stdlib,brod,supervisor3,kafka_protocol]},
+  {mod, {emqx_plugin_kafka_bridge_app,[]}},
+  {env, []},
+  {licenses, ["Apache-2.0"]},
+  {maintainers, ["cshlxm <cshlxm@126.com>"]},
+  {links, [
+           {"Github", "https://github.com/cshlxm"}
+          ]}
+ ]}.
