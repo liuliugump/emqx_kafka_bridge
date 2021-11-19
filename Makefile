@@ -36,5 +36,5 @@ $(CUTTLEFISH_SCRIPT):
 	@${REBAR} get-deps
 	@if [ ! -f cuttlefish ]; then make -C _build/default/lib/cuttlefish; fi
 
-app.config: $(CUTTLEFISH_SCRIPT) etc/emqx_kafka_bridge.conf
+app.config: $(CUTTLEFISH_SCRIPT) etc/emqx_plugin_kafka_bridge.conf
 	$(verbose) $(CUTTLEFISH_SCRIPT) -l info -e etc/ -c etc/emqx_plugin_kafka_bridge.conf -i priv/emqx_plugin_kafka_bridge.schema -d data
