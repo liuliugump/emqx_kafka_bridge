@@ -75,19 +75,19 @@ load(Env) ->
 
 
 on_client_connected(ClientInfo = #{clientid := ClientId, username := Username}, ConnInfo, _Env) ->
-    % io:format("Client(~s) connected, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
-            %   [ClientId, ClientInfo, ConnInfo]).
-    ok.       
+    io:format("Client(~s) connected, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
+            [ClientId, ClientInfo, ConnInfo]).
+    {ok, Props}.   
 
 on_client_disconnected(ClientInfo = #{clientid := ClientId, username := Username}, ReasonCode, ConnInfo, _Env) ->
     io:format("Client(~s) disconnected due to ~p, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
               [ClientId, ReasonCode, ClientInfo, ConnInfo]),
-    Now = erlang:timestamp(),
-    Action = <<"disconnected">>,
-    Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
-    Disconnected = proplists:get_value(disconnected, _Env),
-    produce_kafka_payload(Disconnected, Username, Payload, _Env),
-    ok.
+    % Now = erlang:timestamp(),
+    % Action = <<"disconnected">>,
+    % Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    % Disconnected = proplists:get_value(disconnected, _Env),
+    % produce_kafka_payload(Disconnected, Username, Payload, _Env),
+    {ok, Props}.
 
 
 
@@ -104,27 +104,27 @@ on_client_unsubscribe(#{clientid := ClientId}, _Properties, TopicFilters, _Env) 
 %%--------------------------------------------------------------------
 
 on_session_created(#{clientid := ClientId}, SessInfo, _Env) ->
-    io:format("Session(~s) created, Session Info:~n~p~n", [ClientId, SessInfo]),
-    Now = erlang:timestamp(),
-    Action = <<"connected">>,
-    Username = proplists:get_value(username, SessInfo),
-    Payload = [{client_id, ClientId}, {username, Username}, {action, Action},  {ts, emqx_time:now_secs(Now)}],
-    Connected = proplists:get_value(connected, _Env),
-    produce_kafka_payload(Connected, Username, Payload, _Env).
+    io:format("Session(~s) created, Session Info:~n~p~n", [ClientId, SessInfo]).
+    % Now = erlang:timestamp(),
+    % Action = <<"connected">>,
+    % Username = proplists:get_value(username, SessInfo),
+    % Payload = [{client_id, ClientId}, {username, Username}, {action, Action},  {ts, emqx_time:now_secs(Now)}],
+    % Connected = proplists:get_value(connected, _Env),
+    % produce_kafka_payload(Connected, Username, Payload, _Env).
 
 on_session_subscribed(#{clientid := ClientId, username := Username}, Topic, SubOpts, _Env) ->
-    io:format("Session(~s) subscribed ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]),
-    Now = erlang:timestamp(),
-    Action = <<"subscribed">>,
-    Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
-    Subscribed = proplists:get_value(subscribed, _Env),
-    produce_kafka_payload(Subscribed, Username, Payload, _Env).
+    io:format("Session(~s) subscribed ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]).
+    % Now = erlang:timestamp(),
+    % Action = <<"subscribed">>,
+    % Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
+    % Subscribed = proplists:get_value(subscribed, _Env),
+    % produce_kafka_payload(Subscribed, Username, Payload, _Env).
 
 on_session_unsubscribed(#{clientid := ClientId}, Topic, Opts, _Env) ->
     io:format("Session(~s) unsubscribed ~s with opts: ~p~n", [ClientId, Topic, Opts]).
 
 on_session_resumed(#{clientid := ClientId}, SessInfo, _Env) ->
-    %io:format("Session(~s) resumed, Session Info:~n~p~n", [ClientId, SessInfo]).
+    io:format("Session(~s) resumed, Session Info:~n~p~n", [ClientId, SessInfo]).
     ok.
 
 on_session_discarded(_ClientInfo = #{clientid := ClientId}, SessInfo, _Env) ->
