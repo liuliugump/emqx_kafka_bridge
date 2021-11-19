@@ -149,7 +149,7 @@ on_session_unsubscribed(#{clientid := ClientId}, Topic, Opts, _Env) ->
 
 on_session_resumed(#{clientid := ClientId}, SessInfo, _Env) ->
     io:format("Session(~s) resumed, Session Info:~n~p~n", [ClientId, SessInfo]).
-    ok.
+  
 
 on_session_discarded(_ClientInfo = #{clientid := ClientId}, SessInfo, _Env) ->
     io:format("Session(~s) is discarded. Session Info: ~p~n", [ClientId, SessInfo]).
