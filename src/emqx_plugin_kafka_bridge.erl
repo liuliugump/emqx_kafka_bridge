@@ -101,9 +101,10 @@ on_client_disconnected(ClientInfo = #{clientid := ClientId, username := Username
               [ClientId, ReasonCode, ClientInfo, ConnInfo]),
     Now = erlang:timestamp(),
     Action = <<"disconnected">>,
-    Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    Payload = [{client_id, ClientId}, {action, Action},{reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
     Disconnected = proplists:get_value(disconnected, _Env),
-    produce_kafka_payload(Disconnected, Username, Payload, _Env).
+    brod:produce_sync(brod_client_1, <<"mqtt_client_disconnected">>, 0,<<"key1">>, <<"value1">>).
+    % produce_kafka_payload(Disconnected, Username, Payload, _Env).
 
 on_client_authenticate(_ClientInfo = #{clientid := ClientId}, Result, _Env) ->
     io:format("Client(~s) authenticate, Result:~n~p~n", [ClientId, Result]),
