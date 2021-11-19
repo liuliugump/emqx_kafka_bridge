@@ -98,13 +98,12 @@ on_client_connected(ClientInfo = #{clientid := ClientId}, ConnInfo, _Env) ->
 
 on_client_disconnected(ClientInfo = #{clientid := ClientId, username := Username}, ReasonCode, ConnInfo, _Env) ->
     io:format("Client(~s) disconnected due to ~p, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
-              [ClientId, ReasonCode, ClientInfo, ConnInfo]).
-    % Now = erlang:timestamp(),
-    % Action = <<"disconnected">>,
-    % Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
-    % Disconnected = proplists:get_value(disconnected, _Env),
-    % produce_kafka_payload(Disconnected, Username, Payload, _Env),
-    % {ok, Props}.
+              [ClientId, ReasonCode, ClientInfo, ConnInfo]),
+    Now = erlang:timestamp(),
+    Action = <<"disconnected">>,
+    Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    Disconnected = proplists:get_value(disconnected, _Env),
+    produce_kafka_payload(Disconnected, Username, Payload, _Env).
 
 on_client_authenticate(_ClientInfo = #{clientid := ClientId}, Result, _Env) ->
     io:format("Client(~s) authenticate, Result:~n~p~n", [ClientId, Result]),
