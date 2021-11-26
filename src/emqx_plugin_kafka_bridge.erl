@@ -99,12 +99,11 @@ on_client_connected(ClientInfo = #{clientid := ClientId}, ConnInfo, _Env) ->
 on_client_disconnected(ClientInfo = #{clientid := ClientId, username := Username}, ReasonCode, ConnInfo, _Env) ->
     io:format("Client(~s) disconnected due to ~p, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
               [ClientId, ReasonCode, ClientInfo, ConnInfo]),
-    % Now = erlang:timestamp(),
+    Now =emqx_misc:now_to_secs(erlang:timestamp()),
     Action = <<"disconnected">>,
-    % Payload = [{client_id, ClientId}, {action, Action},{reason, ReasonCode}, {ts, emqx_time:now_secs(Now)}],
+    Payload = [{client_id, ClientId}, {action, Action},{reason, ReasonCode},{ts,Now}],
     Disconnected = proplists:get_value(disconnected, _Env),
-    brod:produce_sync(brod_client_1, <<"mqtt_client_disconnected">>, 0,<<"key1">>, <<"value1">>).
-    % produce_kafka_payload(Disconnected, Username, Payload, _Env).
+    produce_kafka_payload(Disconnected, Username, Payload, _Env).
 
 on_client_authenticate(_ClientInfo = #{clientid := ClientId}, Result, _Env) ->
     io:format("Client(~s) authenticate, Result:~n~p~n", [ClientId, Result]),
@@ -127,22 +126,23 @@ on_client_unsubscribe(#{clientid := ClientId}, _Properties, TopicFilters, _Env) 
 %% Session Lifecircle Hooks
 %%--------------------------------------------------------------------
 
-on_session_created(#{clientid := ClientId}, SessInfo, _Env) ->
-    io:format("Session(~s) created, Session Info:~n~p~n", [ClientId, SessInfo]).
-    % Now = erlang:timestamp(),
-    % Action = <<"connected">>,
-    % Username = proplists:get_value(username, SessInfo),
-    % Payload = [{client_id, ClientId}, {username, Username}, {action, Action},  {ts, emqx_time:now_secs(Now)}],
-    % Connected = proplists:get_value(connected, _Env),
-    % produce_kafka_payload(Connected, Username, Payload, _Env).
+on_session_created(#{clientid := ClientId, username := Username, peerhost := Peername}, SessInfo, _Env) ->
+    io:format("Session(~s) created, Session Info:~n~p~n", [ClientId, SessInfo]),
+    Now =emqx_misc:now_to_secs(erlang:timestamp()),
+    Action = <<"connected">>,
+    Ip = ntoa( Peername),
+    Payload = [{client_id, ClientId}, {username, Username}, {action, Action}, {ts, Now}, {ip, Ip} ],
+    Connected = proplists:get_value(connected, _Env),
+    produce_kafka_payload(Connected, Username, Payload, _Env).
 
-on_session_subscribed(#{clientid := ClientId, username := Username}, Topic, SubOpts, _Env) ->
-    io:format("Session(~s) subscribed ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]).
-    % Now = erlang:timestamp(),
-    % Action = <<"subscribed">>,
-    % Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {topic, Topic}, {ts, emqx_time:now_secs(Now)}],
-    % Subscribed = proplists:get_value(subscribed, _Env),
-    % produce_kafka_payload(Subscribed, Username, Payload, _Env).
+on_session_subscribed(#{clientid := ClientId, username := Username, peerhost := Peername}, Topic, SubOpts, _Env) ->
+    io:format("Session(~s) subscribed ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]),
+    Now =emqx_misc:now_to_secs(erlang:timestamp()),
+    Action = <<"subscribed">>,
+    Ip = ntoa( Peername),
+    Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {topic, Topic}, {ts,Now}, {ip, Ip}],
+    Subscribed = proplists:get_value(subscribed, _Env),
+    produce_kafka_payload(Subscribed, Username, Payload, _Env).
 
 on_session_unsubscribed(#{clientid := ClientId}, Topic, Opts, _Env) ->
     io:format("Session(~s) unsubscribed ~s with opts: ~p~n", [ClientId, Topic, Opts]).
@@ -177,27 +177,26 @@ on_message_publish(Message = #message{id = MsgId,
                         payload = Payload,
                         timestamp  = Time}, _Env) ->
     io:format("Publish ~s~n", [emqx_message:format(Message)]),
-    {ok, Message}.
-
-    % MP =  proplists:get_value(regex, _Env),
-    % Username = emqx_message:get_header(username,Message),
-    % case re:run(Topic, MP, [{capture, all_but_first, list}]) of
-    %    nomatch -> {ok, Message};
-    %    {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,
-    %      Topics = proplists:get_value(topic, _Env),
-    %      case proplists:get_value(Type, Topics) of
-    %          undefined -> io:format("publish no match topic ~s", [Type]);            
-    %          ProduceTopic -> 
-    %               Key = iolist_to_binary([ProductId,"_",DevKey,"_",Fix]),
-    %               Partition = proplists:get_value(partition, _Env),
-    %               Now = erlang:timestamp(),
-    %               Msg = [{client_id, From}, {action, <<"message_publish">>},{topic,Topic},{username,Username}, {payload, Payload}, {ts, emqx_time:now_secs(Now)}],
-    %               {ok, MessageBody} = emqx_json:safe_encode(Msg),
-    %               MsgPayload = iolist_to_binary(MessageBody),
-    %               ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Username, MsgPayload)
-    %     end,
-    %    {ok, Message}
-    % end.
+    MP =  proplists:get_value(regex, _Env),
+    Username = emqx_message:get_header(username, Message, undefined),
+    case re:run(Topic, MP, [{capture, all_but_first, list}]) of
+        nomatch -> {ok, Message};
+        {match, Captured} -> [Type, ProductId, DevKey|Fix] = Captured,
+          Topics = proplists:get_value(topic, _Env),
+          case  proplists:get_value(Type, Topics) of
+              undefined -> io:format("publish no match topic ~s", [Type]);            
+              ProduceTopic ->
+                Key = iolist_to_binary([ProductId,"_",DevKey,"_",Fix]),
+                Partition = proplists:get_value(partition, _Env),
+                Now =emqx_misc:now_to_secs(erlang:timestamp()),
+                Msg = [{client_id, From}, {action, <<"message_publish">>},{topic,Topic},{username,Username}, {payload, Payload}, {ts, Now}],
+                {ok, MessageBody} = emqx_json:safe_encode(Msg),
+                MsgPayload = iolist_to_binary(MessageBody),
+                ok = brod:start_producer(brod_client_1, ProduceTopic, _ProducerConfig = []),
+                ok = brod:produce_sync(brod_client_1, ProduceTopic, getPartiton(Key,Partition), Username, MsgPayload)
+        end,
+        {ok, Message}
+     end.
 
 on_message_dropped(#message{topic = <<"$SYS/", _/binary>>}, _By, _Reason, _Env) ->
     ok;
@@ -225,6 +224,10 @@ getPartiton(Key, Partitions) ->
      <<Fix:120, Match:8>> = crypto:hash(md5, Key),
      abs(Match) rem Partitions.
 
+ntoa({0,0,0,0,0,16#ffff,AB,CD}) ->
+    iolist_to_binary(inet_parse:ntoa({AB bsr 8, AB rem 256, CD bsr 8, CD rem 256}));
+ntoa(IP) ->
+    iolist_to_binary(inet_parse:ntoa(IP)).
 
 
 
@@ -251,6 +254,8 @@ produce_kafka_payload(Key, Username, Message, _Env) ->
     {ok, MessageBody} = emqx_json:safe_encode(Message),
     % MessageBody64 = base64:encode_to_string(MessageBody),
     Payload = iolist_to_binary(MessageBody),
+    io:format("Payload: ~w~n",[Payload]),
     Partition = proplists:get_value(partition, _Env),
     Topic = iolist_to_binary(Key),
+    ok = brod:start_producer(brod_client_1, Topic, _ProducerConfig = []),
     brod:produce_sync(brod_client_1, Topic, getPartiton(Username,Partition), Username, Payload).
