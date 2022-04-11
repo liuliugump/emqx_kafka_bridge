@@ -4,12 +4,34 @@ This is a plugin for the EMQX broker that sends all messages received by the bro
 
    注意：插件release版本目前适配的是emqx V4.1.5
 
+## Build Erlang/OTP：22.3.4.25
+-------------
+
+```
+#安装编译依赖
+yum -y install make gcc gcc-c++ kernel-devel m4 ncurses-devel openssl-devel
+
+#下载源码并解压
+wget https://github.com/erlang/otp/releases/download/OTP-22.3.4.25/otp_src_22.3.4.25.tar.gz
+tar zxvf otp_src_22.3.4.25.tar.gz
+
+#编译erlang
+cd otp_src_22.3.4.25
+./configure --prefix=/usr/local/erlang --with-ssl --enable-threads --enable-smp-support --enable-kernel-poll --enable-hipe --without-java
+make -j8
+make install
+
+#p配置环境变量
+echo "export PATH=/usr/local/erlang/bin:\$PATH" >> /etc/profile
+source /etc/profile
+```
+
 ## Build the EMQ broker
 -------------
 
 1. clone emq-relx project
 ```	
-git clone https://github.com/emqtt/emq-relx.git
+git clone -b 4.1.5 https://github.com/emqtt/emq-relx.git
 ```
 2. Add deps of the plugin in the rebar.config
 ```
@@ -18,7 +40,7 @@ git clone https://github.com/emqtt/emq-relx.git
     ...
     , emqx_rule_engine
     , emqx_plugin_template
-    ,{ emqx_kafka_bridge, {git ,"https://github.com/cshlxm/emqx_kafka_bridge",{branch,"release"}}}
+    ,{emqx_plugin_kafka_bridge, {git ,"https://github.com/liuliugump/emqx_kafka_bridge",{branch,"release"}}}
     ]}.
 ```
 3. Add load plugin in  rebar.config
@@ -26,7 +48,7 @@ git clone https://github.com/emqtt/emq-relx.git
 {relx,
 ...
  , {emqx_psk_file, load}
-        , {emqx_kafka_bridge, load}
+        , {emqx_plugin_kafka_bridge, load}
         ]}
  ```
 4. Build
