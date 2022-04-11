@@ -24,6 +24,9 @@ make install
 #p配置环境变量
 echo "export PATH=/usr/local/erlang/bin:\$PATH" >> /etc/profile
 source /etc/profile
+
+#当 /usr/bin/env: escript: No such file or directory  报错
+需要重新执行 p配置环境变量
 ```
 
 ## Build the EMQ broker
