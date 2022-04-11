@@ -99,7 +99,7 @@ on_client_connected(ClientInfo = #{clientid := ClientId}, ConnInfo, _Env) ->
 on_client_disconnected(ClientInfo = #{clientid := ClientId, username := Username}, ReasonCode, ConnInfo, _Env) ->
     io:format("Client(~s) disconnected due to ~p, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
               [ClientId, ReasonCode, ClientInfo, ConnInfo]),
-    Now =emqx_misc:now_to_secs(os:timestamp()),
+    Now =emqx_misc:now_to_ms(os:timestamp()),
     Action = <<"disconnected">>,
     Payload = [{client_id, ClientId}, {action, Action},{reason, ReasonCode},{ts,Now}],
     Disconnected = proplists:get_value(disconnected, _Env),
@@ -128,7 +128,7 @@ on_client_unsubscribe(#{clientid := ClientId}, _Properties, TopicFilters, _Env) 
 
 on_session_created(#{clientid := ClientId, username := Username, peerhost := Peername}, SessInfo, _Env) ->
     io:format("Session(~s) created, Session Info:~n~p~n", [ClientId, SessInfo]),
-    Now =emqx_misc:now_to_secs(os:timestamp()),
+    Now =emqx_misc:now_to_ms(os:timestamp()),
     Action = <<"connected">>,
     Ip = ntoa( Peername),
     Payload = [{client_id, ClientId}, {username, Username}, {action, Action}, {ts, Now}, {ip, Ip} ],
@@ -137,7 +137,7 @@ on_session_created(#{clientid := ClientId, username := Username, peerhost := Pee
 
 on_session_subscribed(#{clientid := ClientId, username := Username, peerhost := Peername}, Topic, SubOpts, _Env) ->
     io:format("Session(~s) subscribed ~s with subopts: ~p~n", [ClientId, Topic, SubOpts]),
-    Now =emqx_misc:now_to_secs(os:timestamp()),
+    Now =emqx_misc:now_to_ms(os:timestamp()),
     Action = <<"subscribed">>,
     Ip = ntoa( Peername),
     Payload = [{client_id, ClientId}, {action, Action}, {username, Username}, {topic, Topic}, {ts,Now}, {ip, Ip}],
@@ -188,7 +188,7 @@ on_message_publish(Message = #message{id = MsgId,
               ProduceTopic ->
                 Key = iolist_to_binary([ProductId,"_",DevKey,"_",Fix]),
                 Partition = proplists:get_value(partition, _Env),
-                Now =emqx_misc:now_to_secs(os:timestamp()),
+                Now =emqx_misc:now_to_ms(os:timestamp()),
                 Msg = [{client_id, From}, {action, <<"message_publish">>},{topic,Topic},{username,Username}, {payload, Payload}, {ts, Now}],
                 {ok, MessageBody} = emqx_json:safe_encode(Msg),
                 MsgPayload = iolist_to_binary(MessageBody),
